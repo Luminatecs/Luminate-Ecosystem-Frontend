@@ -1,0 +1,55 @@
+{
+  "name": "ardiyq-react-grid-accordion-table",
+  "version": "1.0.0",
+  "description": "A powerful React table component with accordion functionality, CSV import/export, filtering, sorting, and pagination",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "react",
+    "table",
+    "accordion",
+    "grid",
+    "csv",
+    "export",
+    "filter",
+    "sort",
+    "pagination",
+    "typescript",
+    "styled-components"
+  ],
+  "author": "Stephen Quarshie",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ardiy0011/dynamogrid.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ardiy0011/dynamogrid/issues"
+  },
+  "homepage": "https://github.com/Ardiy0011/dynamogrid#readme",
+  "peerDependencies": {
+    "lucide-react": ">=0.200.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "styled-components": ">=5.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/styled-components": "^5.1.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

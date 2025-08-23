@@ -1,0 +1,36 @@
+# Source files
+src/
+*.tsx
+*.ts
+!dist/
+
+# Development files
+tsconfig.json
+.gitignore
+.git/
+
+# Node modules
+node_modules/
+
+# Build artifacts
+*.tsbuildinfo
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
+*.test.*
+*.spec.*
+__tests__/
