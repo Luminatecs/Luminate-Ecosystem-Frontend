@@ -1,35 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import styled, { keyframes } from 'styled-components';
+import React, { useState } from 'react';
+import styled from 'styled-components';
 import { useAuth } from '../../contexts/auth';
 import { UserRole } from '../../models';
 import { Navigate } from 'react-router-dom';
 import WardOnboardingComponent from './components/WardOnboarding';
 import AssignWardComponent from './components/AssignWard';
-
-/**
- * Slide animations
- */
-const slideIn = keyframes`
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-`;
-
-const slideOut = keyframes`
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-`;
 
 /**
  * Main Dashboard Container
@@ -201,6 +176,25 @@ const PageDescription = styled.p`
   line-height: 1.6;
 `;
 
+const SetupStatusIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  color: #166534;
+  font-size: 0.875rem;
+  font-weight: 600;
+`;
+
+const StatusIcon = styled.span`
+  color: #22c55e;
+  font-size: 1rem;
+`;
+
 /**
  * Navigation items configuration
  */
@@ -240,6 +234,12 @@ const OrganizationDashboard: React.FC = () => {
   // Protect route - only ORG_ADMIN can access
   if (!user || user.role !== UserRole.ORG_ADMIN) {
     return <Navigate to="/ecosystem" replace />;
+  }
+
+  // Check if organization setup is complete
+  // If not complete, redirect to setup page
+  if (user.organizationSetupComplete === false) {
+    return <Navigate to="/organization/setup" replace />;
   }
 
   const currentNavItem = navigationItems.find(item => item.id === activeItem);
@@ -289,6 +289,14 @@ const OrganizationDashboard: React.FC = () => {
           <PageHeader>
             <PageTitle>{currentNavItem?.label}</PageTitle>
             <PageDescription>{currentNavItem?.description}</PageDescription>
+            
+            {/* Show setup completion status for completed organizations */}
+            {user.organizationSetupComplete === true && (
+              <SetupStatusIndicator>
+                <StatusIcon>✅</StatusIcon>
+                Organization setup complete! All features are available.
+              </SetupStatusIndicator>
+            )}
           </PageHeader>
 
           {CurrentComponent && <CurrentComponent />}

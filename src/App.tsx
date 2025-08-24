@@ -9,6 +9,7 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import IndividualRegistrationPage from './pages/auth/IndividualRegistrationPage';
 import OrganizationRegistrationPage from './pages/auth/OrganizationRegistrationPage';
+import OrganizationSetup from './pages/auth/OrganizationSetup';
 import OrgWardRegistrationPage from './pages/auth/OrgWardRegistrationPage';
 
 // Main Pages
@@ -45,6 +46,16 @@ function App() {
             <Route path="/register/student" element={<OrgWardRegistrationPage />} />
 
             {/* Protected Routes - Require JWT Authentication */}
+            
+            {/* Organization Setup - Only for ORG_ADMIN users with incomplete setup */}
+            <Route 
+              path="/organization/setup" 
+              element={
+                <ProtectedRoute requiredRoles={[UserRole.ORG_ADMIN]}>
+                  <OrganizationSetup />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Organization Dashboard - Only for ORG_ADMIN */}
             <Route 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/auth';
-import { RegisterOrganizationDto, IndustryType } from '../../models';
+import { RegisterOrganizationDto } from '../../models';
 import Logger from '../../utils/logUtils';
 
 /**
@@ -109,44 +109,6 @@ const Input = styled.input`
   }
 `;
 
-const Select = styled.select`
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background: #f8fafc;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-
-  &:focus {
-    outline: none;
-    border-color: #6366f1;
-    background: white;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
-  }
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background: #f8fafc;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-  resize: vertical;
-  min-height: 80px;
-
-  &:focus {
-    outline: none;
-    border-color: #6366f1;
-    background: white;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
-  }
-`;
-
 const CheckboxGroup = styled.div`
   display: flex;
   align-items: flex-start;
@@ -237,12 +199,6 @@ interface FormData {
   email: string;
   password: string;
   confirmPassword: string;
-  organizationName: string;
-  industryType: IndustryType | '';
-  address: string;
-  phone: string;
-  website?: string;
-  description?: string;
   termsAccepted: boolean;
 }
 
@@ -260,12 +216,6 @@ const OrganizationRegistrationPage: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    organizationName: '',
-    industryType: '',
-    address: '',
-    phone: '',
-    website: '',
-    description: '',
     termsAccepted: false
   });
   
@@ -295,16 +245,6 @@ const OrganizationRegistrationPage: React.FC = () => {
     }
     if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = 'Passwords do not match';
-    }
-
-    // Organization Information Validation
-    if (!formData.organizationName.trim()) errors.organizationName = 'Organization name is required';
-    if (!formData.industryType) errors.industryType = 'Please select an industry type';
-    if (!formData.address.trim()) errors.address = 'Address is required';
-    if (!formData.phone.trim()) {
-      errors.phone = 'Phone number is required';
-    } else if (!/^\+?[\d\s\-\(\)]+$/.test(formData.phone)) {
-      errors.phone = 'Please enter a valid phone number';
     }
 
     if (!formData.termsAccepted) {
@@ -345,29 +285,30 @@ const OrganizationRegistrationPage: React.FC = () => {
 
     try {
       const registrationData: RegisterOrganizationDto = {
-        organizationName: formData.organizationName.trim(),
+        // Placeholder organization fields (backend ignores these in two-phase approach)
+        organizationName: 'PLACEHOLDER',
         contactEmail: formData.email.trim(),
-        contactPhone: formData.phone?.trim() || undefined,
-        address: formData.address?.trim() || undefined,
-        description: formData.description?.trim() || '',
-        website: formData.website?.trim() || '',
+        
+        // Admin user fields (these are what the backend actually uses)
         adminName: formData.name.trim(),
         adminUsername: formData.username.trim(),
         adminEmail: formData.email.trim(),
         adminPassword: formData.password,
         confirmPassword: formData.confirmPassword,
+        
+        // Legal/compliance
         termsAccepted: formData.termsAccepted,
-        privacyPolicyAccepted: true // Set to true since we're handling terms
+        privacyPolicyAccepted: true
       };
 
-      Logger.info('OrganizationRegistration - Submitting registration');
+      Logger.info('OrganizationRegistration - Submitting admin registration (two-phase)');
 
       await registerOrganization(registrationData);
-      Logger.info('OrganizationRegistration - Registration successful');
+      Logger.info('OrganizationRegistration - Admin registration successful');
       
       navigate('/dashboard');
     } catch (error: any) {
-      Logger.error('OrganizationRegistration - Registration failed');
+      Logger.error('OrganizationRegistration - Admin registration failed');
       setValidationErrors({
         submit: error.message || 'Registration failed. Please try again.'
       });
@@ -381,8 +322,8 @@ const OrganizationRegistrationPage: React.FC = () => {
       <RegisterCard>
         <FormSection>
           <div>
-            <Title>Create Organization Account</Title>
-            <Subtitle>Register your educational institution for student management</Subtitle>
+            <Title>Organization Admin Registration</Title>
+            <Subtitle>Create your admin account - complete organization setup after login</Subtitle>
           </div>
           
           <Form onSubmit={handleSubmit} noValidate>
@@ -469,104 +410,6 @@ const OrganizationRegistrationPage: React.FC = () => {
               </FormGroup>
             </FormRow>
 
-            <FormRow>
-              <FormGroup>
-                <Label htmlFor="organizationName">Organization Name</Label>
-                <Input
-                  type="text"
-                  id="organizationName"
-                  name="organizationName"
-                  value={formData.organizationName}
-                  onChange={handleInputChange}
-                  placeholder="Enter organization name"
-                  required
-                  disabled={isSubmitting}
-                />
-                {validationErrors.organizationName && <ErrorMessage>{validationErrors.organizationName}</ErrorMessage>}
-              </FormGroup>
-
-              <FormGroup>
-                <Label htmlFor="industryType">Industry Type</Label>
-                <Select
-                  id="industryType"
-                  name="industryType"
-                  value={formData.industryType}
-                  onChange={handleInputChange}
-                  required
-                  disabled={isSubmitting}
-                >
-                  <option value="">Select industry</option>
-                  <option value={IndustryType.EDUCATION}>Education</option>
-                  <option value={IndustryType.TECHNOLOGY}>Technology</option>
-                  <option value={IndustryType.HEALTHCARE}>Healthcare</option>
-                  <option value={IndustryType.FINANCE}>Finance</option>
-                  <option value={IndustryType.MANUFACTURING}>Manufacturing</option>
-                  <option value={IndustryType.GOVERNMENT}>Government</option>
-                  <option value={IndustryType.OTHER}>Other</option>
-                </Select>
-                {validationErrors.industryType && <ErrorMessage>{validationErrors.industryType}</ErrorMessage>}
-              </FormGroup>
-            </FormRow>
-
-            <FormRow>
-              <FormGroup>
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="Enter phone number"
-                  required
-                  disabled={isSubmitting}
-                />
-                {validationErrors.phone && <ErrorMessage>{validationErrors.phone}</ErrorMessage>}
-              </FormGroup>
-
-              <FormGroup>
-                <Label htmlFor="website">Website (Optional)</Label>
-                <Input
-                  type="url"
-                  id="website"
-                  name="website"
-                  value={formData.website}
-                  onChange={handleInputChange}
-                  placeholder="https://example.com"
-                  disabled={isSubmitting}
-                />
-                {validationErrors.website && <ErrorMessage>{validationErrors.website}</ErrorMessage>}
-              </FormGroup>
-            </FormRow>
-
-            <FormGroup>
-              <Label htmlFor="address">Address</Label>
-              <TextArea
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                placeholder="Enter full address"
-                required
-                disabled={isSubmitting}
-                rows={2}
-              />
-              {validationErrors.address && <ErrorMessage>{validationErrors.address}</ErrorMessage>}
-            </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="description">Description (Optional)</Label>
-              <TextArea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Brief description of your organization"
-                disabled={isSubmitting}
-                rows={2}
-              />
-            </FormGroup>
-
             <CheckboxGroup>
               <Checkbox
                 type="checkbox"
@@ -585,7 +428,7 @@ const OrganizationRegistrationPage: React.FC = () => {
             {validationErrors.termsAccepted && <ErrorMessage>{validationErrors.termsAccepted}</ErrorMessage>}
 
             <SubmitButton type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating Account...' : 'Create Organization Account'}
+              {isSubmitting ? 'Creating Account...' : 'Create Admin Account'}
             </SubmitButton>
           </Form>
 
@@ -597,7 +440,7 @@ const OrganizationRegistrationPage: React.FC = () => {
         <WelcomeSection>
           <WelcomeTitle>Welcome Institution!</WelcomeTitle>
           <WelcomeText>
-            Join educational institutions worldwide using our platform to guide students toward successful careers.
+            Create your admin account first, then complete your organization profile after logging in. Simple two-step setup!
           </WelcomeText>
         </WelcomeSection>
       </RegisterCard>

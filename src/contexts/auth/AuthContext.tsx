@@ -14,6 +14,7 @@ interface AuthUser {
   role: UserRole;
   educationLevel?: EducationLevel;
   organizationId?: string;
+  organizationSetupComplete?: boolean;
   isOrgWard: boolean;
   isActive: boolean;
   emailVerified: boolean;
