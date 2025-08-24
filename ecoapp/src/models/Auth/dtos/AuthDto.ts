@@ -59,6 +59,7 @@ export interface RegisterOrganizationDto {
   termsAccepted: boolean;
   privacyPolicyAccepted: boolean;
 }
+}
 
 /**
  * Organization Registration Response DTO
@@ -99,9 +100,9 @@ export interface RegisterOrgWardDto {
   username: string;
   email: string;
   password: string;
-  confirmPassword: string;
-  educationLevel: EducationLevel;
-  termsAccepted: boolean;
+  confirm_password: string;
+  education_level: EducationLevel;
+  terms_accepted: boolean;
 }
 
 /**

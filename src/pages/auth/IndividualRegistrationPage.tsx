@@ -293,9 +293,9 @@ const IndividualRegistrationPage: React.FC = () => {
         username: formData.username.trim(),
         email: formData.email.trim(),
         password: formData.password,
-        education_level: formData.educationLevel as EducationLevel,
-        confirm_password: formData.confirmPassword,
-        terms_accepted: formData.termsAccepted
+        educationLevel: formData.educationLevel as EducationLevel,
+        confirmPassword: formData.confirmPassword,
+        termsAccepted: formData.termsAccepted
       };
 
       Logger.info('IndividualRegistration - Submitting registration');

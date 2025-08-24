@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/auth';
-import { OrgWardRegistrationDto, EducationLevel } from '../../models';
+import { OrgWardRegistrationDto, RegisterOrgWardDto, EducationLevel } from '../../models';
 import Logger from '../../utils/logUtils';
 
 /**
@@ -408,7 +408,19 @@ const OrgWardRegistrationPage: React.FC = () => {
         token: formData.registrationToken.substring(0, 4) + '...' // Log partial token for debugging
       });
 
-      await registerOrgWard(formData);
+      // Map form data to the format expected by the backend
+      const backendData: RegisterOrgWardDto = {
+        token: formData.registrationToken,
+        name: `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim(),
+        username: formData.studentId,
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: confirmPassword,
+        educationLevel: formData.educationLevel,
+        termsAccepted: true // Assuming terms are accepted if form is submitted
+      };
+
+      await registerOrgWard(backendData);
       
       Logger.success('OrgWardRegistration: Registration successful');
       setSuccessMessage('Registration successful! Please check your email to verify your account before logging in.');
