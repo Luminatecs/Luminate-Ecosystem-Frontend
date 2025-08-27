@@ -173,7 +173,7 @@ class AuthServiceClass {
       clearAuthTokens();
       localStorage.removeItem('user');
       
-      // Call logout endpoint if needed
+
       await apiClient.post('/auth/logout');
     } catch (error: any) {
       // Even if API call fails, clear local data

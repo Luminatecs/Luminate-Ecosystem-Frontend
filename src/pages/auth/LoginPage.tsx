@@ -2,35 +2,43 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/auth';
-import { UserRole } from '../../models';
 import Logger from '../../utils/logUtils';
-
-/**
- * Compact Login Design - Matches UI Reference
- */
-const PageContainer = styled.div`
-  height: 100vh;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-`;
+import {
+  AuthContainer,
+  AuthTitle,
+  AuthSubtitle,
+  FormGroup,
+  Label,
+  Input,
+  Button,
+  ErrorMessage
+} from '../../components/auth/AuthStyles';
 
 const LoginContainer = styled.div`
   display: flex;
   background: white;
   border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  max-width: 800px;
+  max-width: 900px;
   width: 90%;
-  height: 500px;
+  height: 550px;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #4299e1 0%, #2c5282 100%);
+  }
 `;
 
 const LoginFormSection = styled.div`
   flex: 1;
-  padding: 2rem;
+  padding: 3rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -38,511 +46,194 @@ const LoginFormSection = styled.div`
 
 const WelcomeSection = styled.div`
   flex: 1;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #2c5282 0%, #4299e1 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
+  padding: 3rem;
   color: white;
   text-align: center;
-`;
-
-const Header = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
-const Title = styled.h1`
-  color: #1e293b;
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-`;
-
-const Subtitle = styled.p`
-  color: #64748b;
-  font-size: 0.875rem;
-  margin: 0;
-`;
-
-const SocialLogin = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-`;
-
-const SocialButton = styled.button`
-  flex: 1;
-  padding: 0.75rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: white;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #475569;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-
-  &:hover {
-    border-color: #cbd5e1;
-    background: #f8fafc;
-  }
-`;
-
-const Divider = styled.div`
-  display: flex;
-  align-items: center;
-  margin: 1rem 0;
-  color: #64748b;
-  font-size: 0.75rem;
-
-  &::before,
-  &::after {
+  position: relative;
+  
+  &::before {
     content: '';
-    flex: 1;
-    height: 1px;
-    background: #e2e8f0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>') repeat;
+    background-size: 50px 50px;
   }
+`;
 
-  span {
-    margin: 0 0.75rem;
-  }
+const WelcomeTitle = styled.h1`
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+`;
+
+const WelcomeText = styled.p`
+  font-size: 1.1rem;
+  opacity: 0.9;
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 2rem;
 `;
 
 const Form = styled.form`
   width: 100%;
 `;
 
-const FormGroup = styled.div`
-  margin-bottom: 1rem;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 0.375rem;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background: #f8fafc;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-
-  &:focus {
-    outline: none;
-    border-color: #6366f1;
-    background: white;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
-  }
-
-  &::placeholder {
-    color: #94a3b8;
-  }
-
-  &[aria-invalid="true"] {
-    border-color: #ef4444;
-    background: #fef2f2;
-  }
-`;
-
-const CheckboxContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-`;
-
-const CheckboxWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-`;
-
-const CheckboxInput = styled.input`
-  width: 1.25rem;
-  height: 1.25rem;
-  accent-color: #4f46e5;
-`;
-
-const CheckboxLabel = styled.label`
-  font-size: 0.875rem;
-  color: #475569;
-  cursor: pointer;
-`;
-
-const ForgotPassword = styled.a`
-  color: #6366f1;
-  text-decoration: none;
-  font-size: 0.75rem;
-  font-weight: 500;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const SignInButton = styled.button`
-  width: 100%;
-  padding: 0.75rem;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
 const SignUpPrompt = styled.div`
   text-align: center;
-  color: #64748b;
-  font-size: 0.875rem;
+  margin-top: 1.5rem;
+  color: #4a5568;
+`;
 
-  a {
-    color: #4f46e5;
-    text-decoration: none;
-    font-weight: 600;
-
-    &:hover {
-      text-decoration: underline;
-    }
+const SignUpLink = styled(Link)`
+  color: #4299e1;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+  
+  &:hover {
+    color: #2c5282;
   }
 `;
 
-const WelcomeTitle = styled.h2`
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-`;
-
-const WelcomeText = styled.p`
-  font-size: 1rem;
-  opacity: 0.9;
-  line-height: 1.5;
-  margin-bottom: 1.5rem;
-`;
-
-const SignUpButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background: rgba(255, 255, 255, 0.2);
+const WelcomeButton = styled(Button)`
+  background: transparent;
   border: 2px solid rgba(255, 255, 255, 0.3);
   color: white;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
-    transform: translateY(-1px);
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: #dc2626;
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
+  width: auto;
+  padding: 0.875rem 2.5rem;
   
-  &::before {
-    content: '⚠';
-    margin-right: 0.5rem;
-    color: #ef4444;
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
   }
 `;
 
-const LoadingSpinner = styled.div`
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: #ffffff;
-  animation: spin 1s linear infinite;
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-`;
-
-/**
- * Form Data Interface
- */
 interface LoginFormData {
   username: string;
   password: string;
-  rememberMe: boolean;
 }
 
-/**
- * Form Validation Interface
- */
-interface ValidationErrors {
-  username?: string;
-  password?: string;
-  submit?: string;
-}
-
-/**
- * Login Page Component
- */
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, isLoading, user } = useAuth();
-
-  // Form state
+  const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<LoginFormData>({
     username: '',
-    password: '',
-    rememberMe: false,
+    password: ''
   });
+  const [error, setError] = useState('');
 
-  // Validation state
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  /**
-   * Form validation
-   */
-  const validateForm = (): boolean => {
-    const errors: ValidationErrors = {};
-
-    // Username validation
-    if (!formData.username.trim()) {
-      errors.username = 'Username is required';
-    } else if (formData.username.length < 3) {
-      errors.username = 'Username must be at least 3 characters long';
-    } else if (!/^[a-zA-Z0-9_-]+$/.test(formData.username)) {
-      errors.username = 'Username can only contain letters, numbers, underscores, and hyphens';
-    }
-
-    // Password validation
-    if (!formData.password) {
-      errors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters long';
-    }
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  /**
-   * Handle input changes
-   */
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-
-    // Clear validation error for this field
-    if (validationErrors[name as keyof ValidationErrors]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [name]: undefined
-      }));
-    }
-  };
-
-  /**
-   * Handle form submission
-   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isLoading || isSubmitting) return;
+    if (!formData.username || !formData.password) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
 
     try {
-      setIsSubmitting(true);
-      setValidationErrors({});
-
-      // Validate form
-      if (!validateForm()) {
-        return;
-      }
-
-      Logger.info('LoginPage: Attempting login', { username: formData.username });
-
-      // Attempt login
-      await login(formData.username, formData.password, formData.rememberMe);
-      Logger.success('LoginPage: Login successful');
+      Logger.info('LoginPage - Attempting login', { username: formData.username });
       
-      // Route based on user role - user state will be updated after login
-      // Use a small delay to ensure state is updated
-      setTimeout(() => {
-        if (user?.role === UserRole.ORG_ADMIN) {
-          navigate('/organization-dashboard');
+      const user = await login(formData.username, formData.password);
+      
+      if (user) {
+        Logger.success('LoginPage - Login successful', user);
+        
+        // Navigate based on user role and setup status
+        if (user.role === 'SUPER_ADMIN') {
+          navigate('/super-admin-dashboard');
+        } else if (user.role === 'ORG_ADMIN') {
+          if (user.organizationSetupComplete) {
+            navigate('/organization-dashboard');
+          } else {
+            navigate('/organization/setup');
+          }
         } else {
           navigate('/ecosystem');
         }
-      }, 100);
-      
-    } catch (error) {
-      Logger.error('LoginPage: Login failed', error);
-      
-      setValidationErrors({
-        submit: error instanceof Error 
-          ? error.message 
-          : 'Login failed. Please check your credentials and try again.'
-      });
+      } else {
+        throw new Error('Login failed');
+      }
+    } catch (error: any) {
+      Logger.error('LoginPage - Login failed', error);
+      setError(error.message || 'Invalid username or password');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <PageContainer>
+    <AuthContainer>
       <LoginContainer>
-        {/* Login Form Section */}
         <LoginFormSection>
-          <Header>
-            <Title>Sign In</Title>
-            <Subtitle>or use your email & password</Subtitle>
-          </Header>
-
-          {/* Social Login Buttons */}
-          <SocialLogin>
-            <SocialButton type="button">
-              G+
-            </SocialButton>
-            <SocialButton type="button">
-              f
-            </SocialButton>
-            <SocialButton type="button">
-              in
-            </SocialButton>
-          </SocialLogin>
-
-          <Divider>
-            <span>or use your email & password</span>
-          </Divider>
-
-          <Form onSubmit={handleSubmit}>
-            {validationErrors.submit && (
-              <ErrorMessage role="alert">
-                {validationErrors.submit}
-              </ErrorMessage>
-            )}
-
-            <FormGroup>
-              <Label htmlFor="username">Username</Label>
-              <Input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
-                placeholder="Username"
-                required
-                autoComplete="username"
-                disabled={isLoading || isSubmitting}
-                aria-invalid={!!validationErrors.username}
-              />
-              {validationErrors.username && (
-                <ErrorMessage role="alert">
-                  {validationErrors.username}
-                </ErrorMessage>
-              )}
-            </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="Password"
-                required
-                autoComplete="current-password"
-                disabled={isLoading || isSubmitting}
-                aria-invalid={!!validationErrors.password}
-              />
-              {validationErrors.password && (
-                <ErrorMessage role="alert">
-                  {validationErrors.password}
-                </ErrorMessage>
-              )}
-            </FormGroup>
-
-            <CheckboxContainer>
-              <CheckboxWrapper>
-                <CheckboxInput
-                  type="checkbox"
-                  id="rememberMe"
-                  name="rememberMe"
-                  checked={formData.rememberMe}
-                  onChange={handleInputChange}
-                  disabled={isLoading || isSubmitting}
+          <div>
+            <AuthTitle>Welcome Back</AuthTitle>
+            <AuthSubtitle>Sign in to your Luminate Ecosystem account</AuthSubtitle>
+            
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+            
+            <Form onSubmit={handleSubmit}>
+              <FormGroup>
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={formData.username}
+                  onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                  placeholder="Enter your username"
+                  required
                 />
-                <CheckboxLabel htmlFor="rememberMe">
-                  Remember me
-                </CheckboxLabel>
-              </CheckboxWrapper>
-              <ForgotPassword href="/forgot-password">
-                Forgot Your Password?
-              </ForgotPassword>
-            </CheckboxContainer>
-
-            <SignInButton 
-              type="submit" 
-              disabled={isLoading || isSubmitting}
-            >
-              {(isLoading || isSubmitting) && <LoadingSpinner />}
-              {isLoading || isSubmitting ? 'Signing In...' : 'SIGN IN'}
-            </SignInButton>
-          </Form>
+              </FormGroup>
+              
+              <FormGroup>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  placeholder="Enter your password"
+                  required
+                />
+              </FormGroup>
+              
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Signing in...' : 'Sign In'}
+              </Button>
+            </Form>
+            
+            <SignUpPrompt>
+              Don't have an account? <SignUpLink to="/register">Create one here</SignUpLink>
+            </SignUpPrompt>
+          </div>
         </LoginFormSection>
-
-        {/* Welcome Section */}
+        
         <WelcomeSection>
-          <WelcomeTitle>Hello, Friend!</WelcomeTitle>
-          <WelcomeText>Register your new account</WelcomeText>
-          <SignUpButton onClick={() => navigate('/register')}>
-            SIGN UP
-          </SignUpButton>
+          <WelcomeTitle>Luminate Ecosystem</WelcomeTitle>
+          <WelcomeText>
+            Empowering education through innovative technology solutions.
+            Join thousands of educators and students in transforming learning experiences.
+          </WelcomeText>
+          <WelcomeButton onClick={() => navigate('/register')}>
+            Create Account
+          </WelcomeButton>
         </WelcomeSection>
       </LoginContainer>
-    </PageContainer>
+    </AuthContainer>
   );
 };
 

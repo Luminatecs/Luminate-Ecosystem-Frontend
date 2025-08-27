@@ -13,8 +13,12 @@ import OrganizationSetup from './pages/auth/OrganizationSetup';
 import OrgWardRegistrationPage from './pages/auth/OrgWardRegistrationPage';
 
 // Main Pages
-import Ecosystem from './pages/dashboard/Ecosystem';
+import EcosystemHub from './pages/ecosystem/EcosystemHub';
 import OrganizationDashboard from './pages/dashboard/OrganizationDashboard';
+import SuperAdminDashboard from './pages/admin/SuperAdminDashboard';
+
+// Debug Components (development only)
+import UserRoleDebug from './components/debug/UserRoleDebug';
 
 // Module Pages
 import Library from './pages/modules/library/index';
@@ -36,6 +40,7 @@ function App() {
     <Router>
       <AuthProvider>
         <div className="App">
+          <UserRoleDebug />
           <Routes>
             {/* Public Authentication Routes */}
             <Route path="/" element={<LoginPage />} />
@@ -61,26 +66,26 @@ function App() {
             <Route 
               path="/organization-dashboard" 
               element={
-                <ProtectedRoute requiredRoles={[UserRole.ORG_ADMIN]}>
+                <ProtectedRoute requiredRoles={[UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN]}>
                   <OrganizationDashboard />
                 </ProtectedRoute>
               } 
             />
             
             {/* Ecosystem (formerly Dashboard) - Available to all authenticated users */}
-            <Route 
+            {/* <Route 
               path="/dashboard" 
               element={
                 <ProtectedRoute>
                   <Ecosystem />
                 </ProtectedRoute>
               } 
-            />
+            /> */}
             <Route 
               path="/ecosystem" 
               element={
                 <ProtectedRoute>
-                  <Ecosystem />
+                  <EcosystemHub />
                 </ProtectedRoute>
               } 
             />
@@ -115,7 +120,7 @@ function App() {
             <Route 
               path="/resources" 
               element={
-                <ProtectedRoute allowedRoles={[UserRole.INDIVIDUAL, UserRole.ORG_WARD]}>
+                <ProtectedRoute allowedRoles={[UserRole.INDIVIDUAL, UserRole.ORG_WARD, UserRole.SUPER_ADMIN]}>
                   <Resources />
                 </ProtectedRoute>
               } 
@@ -141,7 +146,7 @@ function App() {
             <Route 
               path="/admin/tokens" 
               element={
-                <ProtectedRoute requiredRoles={[UserRole.ORG_ADMIN]}>
+                <ProtectedRoute requiredRoles={[UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN]}>
                   <div>Generate Tokens Page - Coming Soon</div>
                 </ProtectedRoute>
               } 
@@ -149,7 +154,7 @@ function App() {
             <Route 
               path="/admin/students" 
               element={
-                <ProtectedRoute requiredRoles={[UserRole.ORG_ADMIN]}>
+                <ProtectedRoute requiredRoles={[UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN]}>
                   <div>Manage Students Page - Coming Soon</div>
                 </ProtectedRoute>
               } 
@@ -165,13 +170,21 @@ function App() {
             <Route 
               path="/admin/organization" 
               element={
-                <ProtectedRoute requiredRoles={[UserRole.ORG_ADMIN]}>
+                <ProtectedRoute requiredRoles={[UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN]}>
                   <div>Organization Settings Page - Coming Soon</div>
                 </ProtectedRoute>
               } 
             />
 
             {/* Super Admin Routes */}
+            <Route 
+              path="/super-admin-dashboard" 
+              element={
+                <ProtectedRoute requiredRoles={[UserRole.SUPER_ADMIN]}>
+                  <SuperAdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/admin/organizations" 
               element={
@@ -197,6 +210,38 @@ function App() {
               } 
             />
 
+            {/* Unauthorized Access Route */}
+            <Route 
+              path="/unauthorized" 
+              element={
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '100vh',
+                  flexDirection: 'column',
+                  background: '#f8fafc'
+                }}>
+                  <h1 style={{ color: '#e53e3e', marginBottom: '1rem' }}>403 - Unauthorized Access</h1>
+                  <p style={{ color: '#718096', marginBottom: '2rem' }}>You do not have permission to access this page.</p>
+                  <button 
+                    onClick={() => window.location.href = '/ecosystem'}
+                    style={{
+                      background: '#667eea',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.75rem 1.5rem',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    Go to Ecosystem
+                  </button>
+                </div>
+              } 
+            />
+
             {/* Catch-all route for 404 */}
             <Route 
               path="*" 
@@ -212,7 +257,7 @@ function App() {
                   <h1 style={{ color: '#2d3748', marginBottom: '1rem' }}>404 - Page Not Found</h1>
                   <p style={{ color: '#718096', marginBottom: '2rem' }}>The page you are looking for does not exist.</p>
                   <button 
-                    onClick={() => window.location.href = '/dashboard'}
+                    onClick={() => window.location.href = '/ecosystem'}
                     style={{
                       background: '#667eea',
                       color: 'white',
@@ -223,7 +268,7 @@ function App() {
                       fontWeight: '600'
                     }}
                   >
-                    Go to Dashboard
+                    Go to Ecosystem
                   </button>
                 </div>
               } 

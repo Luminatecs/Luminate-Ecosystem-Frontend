@@ -2,221 +2,330 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/auth';
+import OrganizationService from '../../services/OrganizationService';
 import { IndustryType } from '../../models';
 import Logger from '../../utils/logUtils';
+import {
+  AuthContainer,
+  AuthCard,
+  AuthTitle,
+  AuthSubtitle,
+  FormGroup,
+  Label,
+  Input as BaseInput,
+  Button as BaseButton,
+  ErrorMessage,
+  SuccessMessage,
+  Select as BaseSelect,
+  TextArea as BaseTextArea
+} from '../../components/auth/AuthStyles';
 
 /**
- * Styled Components - Clean, professional setup form
+ * Styled Components - Professional application layout
  */
-const SetupContainer = styled.div`
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  padding: 2rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+const SetupContainer = styled(AuthContainer)`
+  display: flex;
+  padding: 0;
 `;
 
-const SetupCard = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+const Sidebar = styled.div`
+  width: 320px;
+  background: #2c5282;
+  color: white;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  
+  @media (max-width: 1024px) {
+    display: none;
+  }
+`;
+
+const SidebarContent = styled.div`
+  flex: 1;
+  position: relative;
+  z-index: 1;
+`;
+
+const Logo = styled.div`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 3rem;
+  opacity: 0.9;
+`;
+
+const StepList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+`;
+
+const StepItem = styled.div<{ isActive: boolean; isCompleted: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: ${props => props.isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent'};
+  border: ${props => props.isActive ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid transparent'};
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+`;
+
+const StepIcon = styled.div<{ isActive: boolean; isCompleted: boolean }>`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: ${props => 
+    props.isCompleted ? '#4299e1' :
+    props.isActive ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)'
+  };
+  color: white;
+  box-shadow: ${props => 
+    props.isCompleted ? '0 0 20px rgba(66, 153, 225, 0.3)' : 'none'
+  };
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+`;
+
+const StepContent = styled.div`
+  flex: 1;
+`;
+
+const StepTitle = styled.div<{ isActive: boolean }>`
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: ${props => props.isActive ? 'white' : 'rgba(255, 255, 255, 0.8)'};
+  margin-bottom: 0.375rem;
+  letter-spacing: 0.3px;
+`;
+
+const StepDescription = styled.div`
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+`;
+
+const MainContent = styled(AuthCard)`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  background: #f8fafc;
 `;
 
 const Header = styled.div`
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  color: white;
-  padding: 2rem;
-  text-align: center;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 2.5rem 2rem;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #4299e1 0%, #2c5282 100%);
+  }
 `;
 
-const Title = styled.h1`
-  font-size: 1.75rem;
-  font-weight: 700;
+const HeaderContent = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
+`;
+
+const Title = styled(AuthTitle)`
+  font-size: 2rem;
   margin-bottom: 0.5rem;
 `;
 
-const Subtitle = styled.p`
-  font-size: 1rem;
-  opacity: 0.9;
+const Subtitle = styled(AuthSubtitle)`
   margin: 0;
+  font-size: 1.1rem;
 `;
 
-const FormSection = styled.div`
-  padding: 2rem;
+const ProgressContainer = styled.div`
+  background: #f8fafc;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #e2e8f0;
+`;
+
+const ProgressWrapper = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
 `;
 
 const ProgressBar = styled.div`
   width: 100%;
-  height: 4px;
+  height: 2px;
   background: #e2e8f0;
-  border-radius: 2px;
-  margin-bottom: 2rem;
+  border-radius: 1px;
   overflow: hidden;
 `;
 
 const ProgressFill = styled.div<{ progress: number }>`
   height: 100%;
-  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
-  border-radius: 2px;
+  background: #3b82f6;
+  border-radius: 1px;
   width: ${props => props.progress}%;
   transition: width 0.3s ease;
+`;
+
+const ProgressText = styled.div`
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  text-align: right;
+`;
+
+const FormSection = styled.div`
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+`;
+
+const FormContainer = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
+`;
+
+const Section = styled.div`
+  background: white;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  }
+`;
+
+const SectionHeader = styled.div`
+  margin-bottom: 2rem;
+  position: relative;
+  padding-left: 1rem;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #4299e1 0%, #2c5282 100%);
+    border-radius: 2px;
+  }
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+`;
+
+const SectionDescription = styled.p`
+  font-size: 1rem;
+  color: #4a5568;
+  margin: 0;
+  line-height: 1.5;
 `;
 
 const FormRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 1.5rem;
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
 `;
 
-const FormGroup = styled.div`
+const Input = styled(BaseInput)<{ hasError?: boolean }>`
+  border-color: ${props => props.hasError ? '#fc8181' : '#e2e8f0'};
+  
+  &:focus {
+    border-color: ${props => props.hasError ? '#fc8181' : '#4299e1'};
+    box-shadow: 0 0 0 3px ${props => props.hasError ? 'rgba(252, 129, 129, 0.1)' : 'rgba(66, 153, 225, 0.1)'};
+  }
+`;
+
+const Select = styled(BaseSelect)<{ hasError?: boolean }>`
+  border-color: ${props => props.hasError ? '#fc8181' : '#e2e8f0'};
+  
+  &:focus {
+    border-color: ${props => props.hasError ? '#fc8181' : '#4299e1'};
+    box-shadow: 0 0 0 3px ${props => props.hasError ? 'rgba(252, 129, 129, 0.1)' : 'rgba(66, 153, 225, 0.1)'};
+  }
+`;
+
+const TextArea = styled(BaseTextArea)<{ hasError?: boolean }>`
+  border-color: ${props => props.hasError ? '#fc8181' : '#e2e8f0'};
+  
+  &:focus {
+    border-color: ${props => props.hasError ? '#fc8181' : '#4299e1'};
+    box-shadow: 0 0 0 3px ${props => props.hasError ? 'rgba(252, 129, 129, 0.1)' : 'rgba(66, 153, 225, 0.1)'};
+  }
+`;
+
+const Footer = styled.div`
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  padding: 1.5rem 2rem;
+`;
+
+const FooterContent = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
   display: flex;
-  flex-direction: column;
-`;
-
-const Label = styled.label`
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 0.5rem;
-`;
-
-const Input = styled.input<{ hasError?: boolean }>`
-  padding: 0.75rem 1rem;
-  border: 1px solid ${props => props.hasError ? '#ef4444' : '#e2e8f0'};
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background: #f8fafc;
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.hasError ? '#ef4444' : '#6366f1'};
-    background: white;
-    box-shadow: 0 0 0 2px ${props => props.hasError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)'};
-  }
-`;
-
-const Select = styled.select<{ hasError?: boolean }>`
-  padding: 0.75rem 1rem;
-  border: 1px solid ${props => props.hasError ? '#ef4444' : '#e2e8f0'};
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background: #f8fafc;
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.hasError ? '#ef4444' : '#6366f1'};
-    background: white;
-    box-shadow: 0 0 0 2px ${props => props.hasError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)'};
-  }
-`;
-
-const TextArea = styled.textarea<{ hasError?: boolean }>`
-  padding: 0.75rem 1rem;
-  border: 1px solid ${props => props.hasError ? '#ef4444' : '#e2e8f0'};
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background: #f8fafc;
-  transition: all 0.2s ease;
-  resize: vertical;
-  min-height: 100px;
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.hasError ? '#ef4444' : '#6366f1'};
-    background: white;
-    box-shadow: 0 0 0 2px ${props => props.hasError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)'};
-  }
-`;
-
-const ErrorMessage = styled.div`
-  background: #fed7d7;
-  color: #c53030;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  margin-top: 0.25rem;
-  font-size: 0.75rem;
-  border-left: 3px solid #f56565;
-`;
-
-const SuccessMessage = styled.div`
-  background: #c6f6d5;
-  color: #22543d;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
-  border-left: 3px solid #38a169;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 const ButtonRow = styled.div`
   display: flex;
   gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid #e2e8f0;
 `;
 
-const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
+const ActionButton = styled(BaseButton)<{ variant?: 'primary' | 'secondary' }>`
   padding: 0.75rem 2rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  width: auto;
   
-  ${props => props.variant === 'primary' ? `
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    color: white;
+  ${props => props.variant === 'secondary' && `
+    background: white;
+    color: #2d3748;
+    border: 2px solid #e2e8f0;
     
-    &:hover:not(:disabled) {
+    &:hover {
+      background: #f8fafc;
+      border-color: #cbd5e0;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    }
-    
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-  ` : `
-    background: #f3f4f6;
-    color: #374151;
-    
-    &:hover:not(:disabled) {
-      background: #e5e7eb;
     }
   `}
-`;
-
-const InfoBox = styled.div`
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-`;
-
-const InfoText = styled.p`
-  color: #1e40af;
-  font-size: 0.875rem;
-  margin: 0;
-  line-height: 1.5;
 `;
 
 /**
@@ -224,10 +333,14 @@ const InfoText = styled.p`
  */
 interface OrganizationFormData {
   organizationName: string;
-  industryType: IndustryType | '';
+  industry: IndustryType | '';
   contactEmail: string;
   contactPhone: string;
   address: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
   website: string;
   description: string;
 }
@@ -250,10 +363,14 @@ const OrganizationSetup: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [formData, setFormData] = useState<OrganizationFormData>({
     organizationName: '',
-    industryType: '',
+    industry: '',
     contactEmail: user?.email || '',
     contactPhone: '',
     address: '',
+    city: '',
+    state: '',
+    country: '',
+    postalCode: '',
     website: '',
     description: ''
   });
@@ -261,9 +378,9 @@ const OrganizationSetup: React.FC = () => {
 
   // Calculate form progress
   const getFormProgress = (): number => {
-    const requiredFields = ['organizationName', 'industryType', 'contactEmail', 'address'];
+    const requiredFields = ['organizationName', 'industry', 'contactEmail', 'address', 'city', 'state', 'country'];
     const filledFields = requiredFields.filter(field => 
-      formData[field as keyof OrganizationFormData].trim() !== ''
+      formData[field as keyof OrganizationFormData].toString().trim() !== ''
     );
     return Math.round((filledFields.length / requiredFields.length) * 100);
   };
@@ -275,14 +392,14 @@ const OrganizationSetup: React.FC = () => {
       return;
     }
     
-    if (user.role !== 'ORG_ADMIN') {
-      navigate('/dashboard');
-      return;
-    }
+    // if (user.role !== 'ORG_ADMIN') {
+    //   navigate('/dashboard');
+    //   return;
+    // }
     
     // TODO: Check if setup is already complete
-    // if (user.organizationSetupComplete) {
-    //   navigate('/dashboard');
+    // if (user.role === 'ORG_ADMIN' && user.organizationSetupComplete) {
+    //   navigate('/organization-dashboard');
     //   return;
     // }
   }, [user, navigate]);
@@ -295,8 +412,8 @@ const OrganizationSetup: React.FC = () => {
       errors.organizationName = 'Organization name is required';
     }
 
-    if (!formData.industryType) {
-      errors.industryType = 'Please select an industry type';
+    if (!formData.industry) {
+      errors.industry = 'Please select an industry type';
     }
 
     if (!formData.contactEmail.trim()) {
@@ -306,7 +423,19 @@ const OrganizationSetup: React.FC = () => {
     }
 
     if (!formData.address.trim()) {
-      errors.address = 'Address is required';
+      errors.address = 'Street address is required';
+    }
+
+    if (!formData.city.trim()) {
+      errors.city = 'City is required';
+    }
+
+    if (!formData.state.trim()) {
+      errors.state = 'State/Province is required';
+    }
+
+    if (!formData.country.trim()) {
+      errors.country = 'Country is required';
     }
 
     // Optional field validation
@@ -322,23 +451,6 @@ const OrganizationSetup: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-
-    // Clear specific field error when user starts typing
-    if (validationErrors[name]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [name]: undefined
-      }));
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -351,30 +463,43 @@ const OrganizationSetup: React.FC = () => {
     setSuccessMessage('');
 
     try {
-      // TODO: Call organization setup API endpoint
+      // Prepare organization data for API call
+      // Combine address fields into a single address string
+      const fullAddress = [
+        formData.address.trim(),
+        formData.city.trim(),
+        formData.state.trim(),
+        formData.country.trim(),
+        formData.postalCode.trim()
+      ].filter(part => part.length > 0).join(', ');
+
       const organizationData = {
         name: formData.organizationName.trim(),
-        industry_type: formData.industryType,
-        contact_email: formData.contactEmail.trim(),
-        contact_phone: formData.contactPhone.trim() || undefined,
-        address: formData.address.trim(),
-        website: formData.website.trim() || undefined,
-        description: formData.description.trim() || undefined
+        contactEmail: formData.contactEmail.trim(),
+        contactPhone: formData.contactPhone.trim() || undefined,
+        address: fullAddress,
+        website: formData.website?.trim() || undefined,
+        description: formData.description?.trim() || undefined
       };
 
       Logger.info('OrganizationSetup - Submitting organization setup', organizationData);
 
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call the actual API endpoint
+      const response = await OrganizationService.setupOrganization(organizationData);
+      console.log('org registration response', response)
+      if (!response.success) {
+        throw new Error(response.error || 'Organization setup failed');
+      }
 
-      Logger.success('OrganizationSetup - Organization setup completed successfully');
+      Logger.success('OrganizationSetup - Organization setup completed successfully', response.data);
       
       setSuccessMessage('Organization setup completed successfully! Redirecting to dashboard...');
       
-      // Redirect to dashboard after success
+      // Allow time for the server state to update and success message to be shown
       setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
+          Logger.info('OrganizationSetup - Navigating to dashboard with full page reload');
+          window.location.href = '/organization-dashboard';
+      }, 3000);
 
     } catch (error: any) {
       Logger.error('OrganizationSetup - Setup failed', error);
@@ -386,192 +511,273 @@ const OrganizationSetup: React.FC = () => {
     }
   };
 
-  const handleSkipForNow = () => {
-    // TODO: Implement skip functionality
-    navigate('/dashboard');
-  };
-
   if (!user) {
     return null; // Will redirect in useEffect
   }
 
   return (
     <SetupContainer>
-      <SetupCard>
+      <Sidebar>
+        <SidebarContent>
+          <Logo>Luminate Ecosystem</Logo>
+          
+          <StepList>
+            <StepItem isActive={false} isCompleted={true}>
+              <StepIcon isActive={false} isCompleted={true}>✓</StepIcon>
+              <StepContent>
+                <StepTitle isActive={false}>Admin Account</StepTitle>
+                <StepDescription>Account created successfully</StepDescription>
+              </StepContent>
+            </StepItem>
+            
+            <StepItem isActive={true} isCompleted={false}>
+              <StepIcon isActive={true} isCompleted={false}>2</StepIcon>
+              <StepContent>
+                <StepTitle isActive={true}>Organization Profile</StepTitle>
+                <StepDescription>Complete your organization details</StepDescription>
+              </StepContent>
+            </StepItem>
+            
+            <StepItem isActive={false} isCompleted={false}>
+              <StepIcon isActive={false} isCompleted={false}>3</StepIcon>
+              <StepContent>
+                <StepTitle isActive={false}>Start Managing</StepTitle>
+                <StepDescription>Access your dashboard</StepDescription>
+              </StepContent>
+            </StepItem>
+          </StepList>
+        </SidebarContent>
+      </Sidebar>
+
+      <MainContent>
         <Header>
-          <Title>Complete Your Organization Setup</Title>
-          <Subtitle>Finish setting up your organization profile to get started</Subtitle>
+          <HeaderContent>
+            <Title>Organization Profile Setup</Title>
+            <Subtitle>Complete your organization details to start managing students and resources</Subtitle>
+          </HeaderContent>
         </Header>
 
+        <ProgressContainer>
+          <ProgressWrapper>
+            <ProgressBar>
+              <ProgressFill progress={getFormProgress()} />
+            </ProgressBar>
+            <ProgressText>{getFormProgress()}% Complete</ProgressText>
+          </ProgressWrapper>
+        </ProgressContainer>
+
         <FormSection>
-          <ProgressBar>
-            <ProgressFill progress={getFormProgress()} />
-          </ProgressBar>
+          <FormContainer>
+            {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
 
-          <InfoBox>
-            <InfoText>
-              <strong>Welcome, {user.name}!</strong> Complete your organization profile to enable 
-              student registration and start managing your institution effectively.
-            </InfoText>
-          </InfoBox>
+            <Form onSubmit={handleSubmit}>
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Basic Information</SectionTitle>
+                  <SectionDescription>Primary details about your organization</SectionDescription>
+                </SectionHeader>
 
-          {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
+                <FormRow>
+                  <FormGroup>
+                    <Label htmlFor="organizationName">Organization Name *</Label>
+                    <Input
+                      id="organizationName"
+                      type="text"
+                      value={formData.organizationName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, organizationName: e.target.value }))}
+                      hasError={!!validationErrors.organizationName}
+                      placeholder="Enter your organization name"
+                    />
+                    {validationErrors.organizationName && (
+                      <ErrorMessage>{validationErrors.organizationName}</ErrorMessage>
+                    )}
+                  </FormGroup>
 
-          <Form onSubmit={handleSubmit}>
-            {validationErrors.submit && (
-              <ErrorMessage>{validationErrors.submit}</ErrorMessage>
-            )}
+                  <FormGroup>
+                    <Label htmlFor="industry">Industry Type *</Label>
+                    <Select
+                      id="industry"
+                      value={formData.industry}
+                      onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value as IndustryType }))}
+                      hasError={!!validationErrors.industry}
+                    >
+                      <option value="">Select industry type</option>
+                      <option value="EDUCATION">Education</option>
+                      <option value="HEALTHCARE">Healthcare</option>
+                      <option value="TECHNOLOGY">Technology</option>
+                      <option value="MANUFACTURING">Manufacturing</option>
+                      <option value="FINANCE">Finance</option>
+                      <option value="RETAIL">Retail</option>
+                      <option value="OTHER">Other</option>
+                    </Select>
+                    {validationErrors.industry && (
+                      <ErrorMessage>{validationErrors.industry}</ErrorMessage>
+                    )}
+                  </FormGroup>
+                </FormRow>
 
-            <FormRow>
-              <FormGroup>
-                <Label htmlFor="organizationName">Organization Name *</Label>
-                <Input
-                  type="text"
-                  id="organizationName"
-                  name="organizationName"
-                  value={formData.organizationName}
-                  onChange={handleInputChange}
-                  placeholder="Enter your organization name"
-                  hasError={!!validationErrors.organizationName}
-                  disabled={isSubmitting}
-                />
-                {validationErrors.organizationName && (
-                  <ErrorMessage>{validationErrors.organizationName}</ErrorMessage>
-                )}
-              </FormGroup>
+                <FormRow>
+                  <FormGroup>
+                    <Label htmlFor="contactEmail">Contact Email *</Label>
+                    <Input
+                      id="contactEmail"
+                      type="email"
+                      value={formData.contactEmail}
+                      onChange={(e) => setFormData(prev => ({ ...prev, contactEmail: e.target.value }))}
+                      hasError={!!validationErrors.contactEmail}
+                      placeholder="organization@example.com"
+                    />
+                    {validationErrors.contactEmail && (
+                      <ErrorMessage>{validationErrors.contactEmail}</ErrorMessage>
+                    )}
+                  </FormGroup>
 
-              <FormGroup>
-                <Label htmlFor="industryType">Industry Type *</Label>
-                <Select
-                  id="industryType"
-                  name="industryType"
-                  value={formData.industryType}
-                  onChange={handleInputChange}
-                  hasError={!!validationErrors.industryType}
-                  disabled={isSubmitting}
-                >
-                  <option value="">Select industry type</option>
-                  <option value={IndustryType.EDUCATION}>Education</option>
-                  <option value={IndustryType.TECHNOLOGY}>Technology</option>
-                  <option value={IndustryType.HEALTHCARE}>Healthcare</option>
-                  <option value={IndustryType.FINANCE}>Finance</option>
-                  <option value={IndustryType.MANUFACTURING}>Manufacturing</option>
-                  <option value={IndustryType.GOVERNMENT}>Government</option>
-                  <option value={IndustryType.OTHER}>Other</option>
-                </Select>
-                {validationErrors.industryType && (
-                  <ErrorMessage>{validationErrors.industryType}</ErrorMessage>
-                )}
-              </FormGroup>
-            </FormRow>
+                  <FormGroup>
+                    <Label htmlFor="contactPhone">Contact Phone</Label>
+                    <Input
+                      id="contactPhone"
+                      type="tel"
+                      value={formData.contactPhone}
+                      onChange={(e) => setFormData(prev => ({ ...prev, contactPhone: e.target.value }))}
+                      hasError={!!validationErrors.contactPhone}
+                      placeholder="+1 (555) 123-4567"
+                    />
+                    {validationErrors.contactPhone && (
+                      <ErrorMessage>{validationErrors.contactPhone}</ErrorMessage>
+                    )}
+                  </FormGroup>
+                </FormRow>
 
-            <FormGroup>
-              <Label htmlFor="contactEmail">Contact Email *</Label>
-              <Input
-                type="email"
-                id="contactEmail"
-                name="contactEmail"
-                value={formData.contactEmail}
-                onChange={handleInputChange}
-                placeholder="organization@example.com"
-                hasError={!!validationErrors.contactEmail}
-                disabled={isSubmitting}
-              />
-              {validationErrors.contactEmail && (
-                <ErrorMessage>{validationErrors.contactEmail}</ErrorMessage>
-              )}
-            </FormGroup>
+                <FormGroup>
+                  <Label htmlFor="description">Organization Description</Label>
+                  <TextArea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    hasError={!!validationErrors.description}
+                    placeholder="Brief description of your organization..."
+                  />
+                  {validationErrors.description && (
+                    <ErrorMessage>{validationErrors.description}</ErrorMessage>
+                  )}
+                </FormGroup>
+              </Section>
 
-            <FormRow>
-              <FormGroup>
-                <Label htmlFor="contactPhone">Phone Number (Optional)</Label>
-                <Input
-                  type="tel"
-                  id="contactPhone"
-                  name="contactPhone"
-                  value={formData.contactPhone}
-                  onChange={handleInputChange}
-                  placeholder="+1 (555) 123-4567"
-                  hasError={!!validationErrors.contactPhone}
-                  disabled={isSubmitting}
-                />
-                {validationErrors.contactPhone && (
-                  <ErrorMessage>{validationErrors.contactPhone}</ErrorMessage>
-                )}
-              </FormGroup>
+              <Section>
+                <SectionHeader>
+                  <SectionTitle>Location & Address</SectionTitle>
+                  <SectionDescription>Physical location of your organization</SectionDescription>
+                </SectionHeader>
 
-              <FormGroup>
-                <Label htmlFor="website">Website (Optional)</Label>
-                <Input
-                  type="url"
-                  id="website"
-                  name="website"
-                  value={formData.website}
-                  onChange={handleInputChange}
-                  placeholder="https://yourorganization.com"
-                  hasError={!!validationErrors.website}
-                  disabled={isSubmitting}
-                />
-                {validationErrors.website && (
-                  <ErrorMessage>{validationErrors.website}</ErrorMessage>
-                )}
-              </FormGroup>
-            </FormRow>
+                <FormGroup>
+                  <Label htmlFor="address">Street Address *</Label>
+                  <Input
+                    id="address"
+                    type="text"
+                    value={formData.address}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                    hasError={!!validationErrors.address}
+                    placeholder="123 Main Street"
+                  />
+                  {validationErrors.address && (
+                    <ErrorMessage>{validationErrors.address}</ErrorMessage>
+                  )}
+                </FormGroup>
 
-            <FormGroup>
-              <Label htmlFor="address">Address *</Label>
-              <TextArea
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                placeholder="Enter your organization's full address"
-                hasError={!!validationErrors.address}
-                disabled={isSubmitting}
-                rows={3}
-              />
-              {validationErrors.address && (
-                <ErrorMessage>{validationErrors.address}</ErrorMessage>
-              )}
-            </FormGroup>
+                <FormRow>
+                  <FormGroup>
+                    <Label htmlFor="city">City *</Label>
+                    <Input
+                      id="city"
+                      type="text"
+                      value={formData.city}
+                      onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                      hasError={!!validationErrors.city}
+                      placeholder="City name"
+                    />
+                    {validationErrors.city && (
+                      <ErrorMessage>{validationErrors.city}</ErrorMessage>
+                    )}
+                  </FormGroup>
 
-            <FormGroup>
-              <Label htmlFor="description">Description (Optional)</Label>
-              <TextArea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Brief description of your organization (optional)"
-                hasError={!!validationErrors.description}
-                disabled={isSubmitting}
-                rows={3}
-              />
-              {validationErrors.description && (
-                <ErrorMessage>{validationErrors.description}</ErrorMessage>
-              )}
-            </FormGroup>
+                  <FormGroup>
+                    <Label htmlFor="state">State/Province *</Label>
+                    <Input
+                      id="state"
+                      type="text"
+                      value={formData.state}
+                      onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                      hasError={!!validationErrors.state}
+                      placeholder="State or province"
+                    />
+                    {validationErrors.state && (
+                      <ErrorMessage>{validationErrors.state}</ErrorMessage>
+                    )}
+                  </FormGroup>
+                </FormRow>
 
+                <FormRow>
+                  <FormGroup>
+                    <Label htmlFor="country">Country *</Label>
+                    <Input
+                      id="country"
+                      type="text"
+                      value={formData.country}
+                      onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                      hasError={!!validationErrors.country}
+                      placeholder="Country name"
+                    />
+                    {validationErrors.country && (
+                      <ErrorMessage>{validationErrors.country}</ErrorMessage>
+                    )}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label htmlFor="postalCode">Postal Code</Label>
+                    <Input
+                      id="postalCode"
+                      type="text"
+                      value={formData.postalCode}
+                      onChange={(e) => setFormData(prev => ({ ...prev, postalCode: e.target.value }))}
+                      hasError={!!validationErrors.postalCode}
+                      placeholder="12345"
+                    />
+                    {validationErrors.postalCode && (
+                      <ErrorMessage>{validationErrors.postalCode}</ErrorMessage>
+                    )}
+                  </FormGroup>
+                </FormRow>
+              </Section>
+            </Form>
+          </FormContainer>
+        </FormSection>
+
+        <Footer>
+          <FooterContent>
+            <div>* Required fields</div>
             <ButtonRow>
-              <Button 
-                type="button" 
+              <ActionButton 
                 variant="secondary" 
-                onClick={handleSkipForNow}
-                disabled={isSubmitting}
+                type="button"
+                onClick={() => navigate('/ecosystem')}
               >
                 Skip for Now
-              </Button>
-              <Button 
+              </ActionButton>
+              <ActionButton 
+                variant="primary" 
                 type="submit" 
-                variant="primary"
                 disabled={isSubmitting}
+                onClick={handleSubmit}
               >
-                {isSubmitting ? 'Setting up...' : 'Complete Setup'}
-              </Button>
+                {isSubmitting ? 'Creating Organization...' : 'Complete Setup'}
+              </ActionButton>
             </ButtonRow>
-          </Form>
-        </FormSection>
-      </SetupCard>
+          </FooterContent>
+        </Footer>
+              {validationErrors.submit && (
+                <ErrorMessage>{validationErrors.submit}</ErrorMessage>
+              )}
+      </MainContent>
     </SetupContainer>
   );
 };

@@ -124,10 +124,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // Check required roles (user must have ALL specified roles)
+  // Check required roles (user must have ANY of the specified roles)
   if (requiredRoles && requiredRoles.length > 0) {
-    const hasAllRequiredRoles = requiredRoles.every(role => hasRole(role));
-    if (!hasAllRequiredRoles) {
+    const hasAnyRequiredRole = hasAnyRole(requiredRoles);
+    if (!hasAnyRequiredRole) {
       return (
         <Navigate 
           to="/unauthorized" 
@@ -157,6 +157,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       );
     }
   }
+  
 
   // User is authenticated and authorized
   return <>{children}</>;

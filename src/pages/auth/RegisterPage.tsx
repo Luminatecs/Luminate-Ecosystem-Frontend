@@ -1,47 +1,48 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { UserRole } from '../../models';
+import {
+  AuthContainer,
+  AuthTitle,
+  AuthSubtitle
+} from '../../components/auth/AuthStyles';
 
 /**
- * Compact Register Page Styling
+ * Register Page Container
  */
 const RegisterContainer = styled.div`
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const RegisterCard = styled.div`
-  background: white;
-  border-radius: 12px;
-  /* box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); */
-  /* padding: 2rem; */
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 3rem;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   width: 100%;
-  max-width: 750px;
+  max-width: 800px;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(66, 153, 225, 0.4) 50%, transparent 100%);
+  }
 `;
 
-const Title = styled.h1`
-  text-align: center;
-  color: #2d3748;
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-`;
-
-const Subtitle = styled.p`
-  text-align: center;
-  color: #718096;
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
-`;
-
+/**
+ * Options Grid
+ */
 const OptionsGrid = styled.div`
   display: grid;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 1.5rem;
+  margin: 2.5rem 0;
 
   @media (min-width: 640px) {
     grid-template-columns: 1fr 1fr;
@@ -50,23 +51,44 @@ const OptionsGrid = styled.div`
 
 const OptionCard = styled(Link)`
   display: block;
-  background: #f8fafc;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(66, 153, 225, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(66, 153, 225, 0.05) 0%, rgba(44, 82, 130, 0.02) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.15);
-    border-color: #6366f1;
+    transform: translateY(-4px);
+    box-shadow: 
+      0 12px 30px rgba(66, 153, 225, 0.15),
+      0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: rgba(66, 153, 225, 0.3);
+
+    &::before {
+      opacity: 1;
+    }
   }
 
   &:active {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
   }
 `;
 
@@ -181,12 +203,12 @@ const BackLink = styled(Link)`
  */
 const RegisterPage: React.FC = () => {
   return (
-    <RegisterContainer>
-      <RegisterCard>
-        {/* <Title>Join Our Platform</Title> */}
-        <Subtitle>
+    <AuthContainer>
+      <RegisterContainer>
+        <AuthTitle>Join Our Platform</AuthTitle>
+        <AuthSubtitle>
           Choose how you'd like to get started with your career guidance journey
-        </Subtitle>
+        </AuthSubtitle>
 
         <OptionsGrid>
           <OptionCard to="/register/individual">
@@ -234,8 +256,8 @@ const RegisterPage: React.FC = () => {
             ← Back to Sign In
           </BackLink>
         </BackToLogin>
-      </RegisterCard>
-    </RegisterContainer>
+      </RegisterContainer>
+    </AuthContainer>
   );
 };
 

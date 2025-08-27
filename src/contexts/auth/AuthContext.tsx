@@ -3,6 +3,7 @@ import { UserRole, EducationLevel } from '../../models';
 import { AuthService } from '../../services/auth';
 import { storeToken, storeRefreshToken, storeTokenExpiration, clearAuthTokens } from '../../utils/tokenUtils';
 import Logger from '../../utils/logUtils';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 /**
  * User Interface for Auth Context
@@ -101,7 +102,7 @@ interface AuthContextType {
   error: string | null;
   
   // Actions
-  login: (username: string, password: string, rememberMe?: boolean) => Promise<void>;
+  login: (username: string, password: string, rememberMe?: boolean) => Promise<AuthUser>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<void>;
   registerOrganization: (data: any) => Promise<void>;
@@ -140,6 +141,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isAuthenticated = StorageHelper.isAuthenticated();
   const user = StorageHelper.getUser();
   const organization = StorageHelper.getOrganization();
+  const navigate = useNavigate();
 
   /**
    * Initialize authentication state on app load
@@ -170,7 +172,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Login function
    * PERSISTENT: Stores user data in localStorage for persistence
    */
-  const login = async (username: string, password: string, rememberMe = false): Promise<void> => {
+  const login = async (username: string, password: string, rememberMe = false): Promise<AuthUser> => {
     try {
       setIsLoading(true);
       setError(null);
@@ -203,6 +205,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           role: response.data.user.role as UserRole,
           educationLevel: response.data.user.educationLevel as EducationLevel,
           organizationId: response.data.user.organizationId,
+          organizationSetupComplete: response.data.user.organizationSetupComplete,
           isOrgWard: response.data.user.isOrgWard,
           isActive: response.data.user.isActive,
           emailVerified: response.data.user.emailVerified,
@@ -222,6 +225,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         setIsLoading(false);
         Logger.success('AuthProvider: Login successful', { userId: user.id, role: user.role });
+        
+        return user;
       } else {
         throw new Error(response.message || 'Login failed');
       }
@@ -243,6 +248,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await AuthService.logout();
       StorageHelper.clearAll();
       setError(null);
+      navigate('/login');
       Logger.success('AuthProvider: Logout successful');
     } catch (error) {
       Logger.error('AuthProvider: Logout failed', error);

@@ -1,214 +1,357 @@
-import React from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useAuth } from '../../../contexts/auth';
+import { Search, X } from 'lucide-react';
+import LibraryService, { ISchool } from '../../../services/LibraryService';
 
 /**
- * Library Module Styled Components
+ * Google-style Library Search Container
  */
 const LibraryContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-  padding: 2rem;
-  color: white;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
 `;
 
+/**
+ * Header with Back Button
+ */
 const Header = styled.div`
+  padding: 1rem 2rem;
   display: flex;
-  justify-content: between;
   align-items: center;
-  margin-bottom: 3rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
 `;
 
+/**
+ * Back Button
+ */
 const BackButton = styled.button`
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-weight: 600;
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateX(-2px);
-  }
-`;
-
-const Title = styled.h1`
-  font-size: 3rem;
-  font-weight: 700;
-  margin: 0;
-  text-align: center;
-  flex: 1;
-  background: linear-gradient(45deg, #ffffff, #e0f2fe);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-`;
-
-const Subtitle = styled.p`
-  text-align: center;
-  font-size: 1.2rem;
-  margin-bottom: 3rem;
-  opacity: 0.9;
-`;
-
-const ContentGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-`;
-
-const FeatureCard = styled.div`
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  padding: 2rem;
-  transition: all 0.3s ease;
-  cursor: pointer;
-
-  &:hover {
-    transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  }
-`;
-
-const FeatureIcon = styled.div`
-  width: 60px;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  margin-bottom: 1rem;
-`;
-
-const FeatureTitle = styled.h3`
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-`;
-
-const FeatureDescription = styled.p`
-  opacity: 0.8;
-  line-height: 1.6;
-  margin-bottom: 1rem;
-`;
-
-const FeatureButton = styled.button`
-  background: white;
-  color: #3b82f6;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #475569;
   }
 `;
 
 /**
- * Library Page Component
+ * Main Content Area - Always centered for the logo and search
+ */
+const MainContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+`;
+
+/**
+ * Google-style Logo
+ */
+const Logo = styled.div`
+  font-size: 6rem;
+  font-weight: 400;
+  margin-bottom: 2rem;
+  text-align: center;
+  
+  .luminate {
+    background: linear-gradient(135deg, #4285f4 0%, #34a853 25%, #fbbc05 50%, #ea4335 75%, #4285f4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -2px;
+  }
+  
+  .library {
+    color: #5f6368;
+    font-size: 0.6em;
+    display: block;
+    margin-top: -1rem;
+    font-weight: 300;
+  }
+`;
+
+/**
+ * Search Container with dropdown
+ */
+const SearchContainer = styled.div`
+  width: 100%;
+  max-width: 584px;
+  position: relative;
+  margin-bottom: 2rem;
+`;
+
+/**
+ * Results Dropdown Container
+ */
+const ResultsDropdown = styled.div<{ show?: boolean }>`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #dfe1e5;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: ${props => props.show ? 'block' : 'none'};
+`;
+
+/**
+ * Google-style Search Input with rounded border for dropdown
+ */
+const SearchInput = styled.input<{ hasResults?: boolean }>`
+  width: 100%;
+  height: 48px;
+  border: 1px solid #dfe1e5;
+  border-radius: ${props => props.hasResults ? '24px 24px 0 0' : '24px'};
+  padding: 0 20px 0 48px;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px 1px rgba(64,60,67,.16);
+
+  &:hover {
+    box-shadow: 0 2px 8px 1px rgba(64,60,67,.24);
+  }
+
+  &:focus {
+    border-color: #4285f4;
+    box-shadow: 0 2px 8px 1px rgba(66,133,244,.24);
+  }
+
+  &::placeholder {
+    color: #9aa0a6;
+  }
+`;
+
+/**
+ * Search Icon using Lucide React
+ */
+const SearchIconContainer = styled.div`
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9aa0a6;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+`;
+
+/**
+ * Clear Button using Lucide React
+ */
+const ClearButton = styled.button<{ show?: boolean }>`
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9aa0a6;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: ${props => props.show ? 'flex' : 'none'};
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    background: #f1f3f4;
+  }
+`;
+
+/**
+ * Individual Result Item in dropdown
+ */
+const ResultItem = styled.div`
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f3f4;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+/**
+ * Result School Name
+ */
+const ResultTitle = styled.h3`
+  color: #1a0dab;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.3;
+  margin: 0 0 4px 0;
+`;
+
+/**
+ * Result Description
+ */
+const ResultDescription = styled.div`
+  color: #4d5156;
+  font-size: 14px;
+  line-height: 1.4;
+  max-width: 600px;
+`;
+
+/**
+ * Loading/No Results Message
+ */
+const MessageText = styled.div`
+  padding: 16px;
+  color: #70757a;
+  font-size: 14px;
+  text-align: center;
+`;
+
+/**
+ * Library Component
  */
 const Library: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<ISchool[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
-  const goBack = () => {
-    navigate('/ecosystem');
+  const handleSearch = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    setShowResults(true);
+    
+    try {
+      const response = await LibraryService.searchSchoolData(query.trim());
+      if (response.success && response.data) {
+        setSearchResults(response.data);
+      } else {
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSearch(searchQuery);
   };
 
-  const libraryFeatures = [
-    {
-      id: 'digital-books',
-      title: 'Digital Books',
-      description: 'Access thousands of academic textbooks, research papers, and educational materials in digital format.',
-      icon: '📚',
-      action: () => console.log('Navigate to Digital Books')
-    },
-    {
-      id: 'research-papers',
-      title: 'Research Papers',
-      description: 'Browse through peer-reviewed research papers and academic publications from leading institutions.',
-      icon: '📄',
-      action: () => console.log('Navigate to Research Papers')
-    },
-    {
-      id: 'journals',
-      title: 'Academic Journals',
-      description: 'Explore academic journals across various disciplines and stay updated with latest research.',
-      icon: '📰',
-      action: () => console.log('Navigate to Journals')
-    },
-    {
-      id: 'multimedia',
-      title: 'Multimedia Resources',
-      description: 'Video lectures, audio books, and interactive educational content for enhanced learning.',
-      icon: '🎥',
-      action: () => console.log('Navigate to Multimedia')
-    },
-    {
-      id: 'archives',
-      title: 'Digital Archives',
-      description: 'Historical documents, theses, and institutional repositories for comprehensive research.',
-      icon: '🗄️',
-      action: () => console.log('Navigate to Archives')
-    },
-    {
-      id: 'tools',
-      title: 'Research Tools',
-      description: 'Citation generators, reference managers, and other tools to support your academic work.',
-      icon: '🛠️',
-      action: () => console.log('Navigate to Tools')
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    
+    // Auto-search as user types (debounced)
+    if (value.length > 2) {
+      const timeoutId = setTimeout(() => {
+        handleSearch(value);
+      }, 300);
+      return () => clearTimeout(timeoutId);
+    } else if (value.length === 0) {
+      setSearchResults([]);
+      setShowResults(false);
     }
-  ];
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setShowResults(false);
+  };
+
+  const handleBackToEcosystem = () => {
+    navigate('/ecosystem');
+  };
 
   return (
     <LibraryContainer>
       <Header>
-        <BackButton onClick={goBack}>
+        <BackButton onClick={handleBackToEcosystem}>
           ← Back to Ecosystem
         </BackButton>
-        <Title>Library</Title>
-        <div style={{ width: '140px' }}></div> {/* Spacer for centering */}
       </Header>
 
-      <Subtitle>
-        Welcome to your comprehensive digital library, {user?.name}!
-        <br />
-        Discover a vast collection of academic resources and research materials.
-      </Subtitle>
+      <MainContent>
+        <Logo>
+          <span className="luminate">Luminate</span>
+          <span className="library">Library</span>
+        </Logo>
 
-      <ContentGrid>
-        {libraryFeatures.map((feature) => (
-          <FeatureCard key={feature.id} onClick={feature.action}>
-            <FeatureIcon>
-              {feature.icon}
-            </FeatureIcon>
-            <FeatureTitle>{feature.title}</FeatureTitle>
-            <FeatureDescription>{feature.description}</FeatureDescription>
-            <FeatureButton>
-              Explore {feature.title}
-            </FeatureButton>
-          </FeatureCard>
-        ))}
-      </ContentGrid>
+        <SearchContainer>
+          <form onSubmit={handleSearchSubmit}>
+            <SearchIconContainer>
+              <Search size={18} />
+            </SearchIconContainer>
+            <SearchInput
+              type="text"
+              placeholder="Search for schools, districts, programs..."
+              value={searchQuery}
+              onChange={handleInputChange}
+              autoComplete="off"
+              hasResults={showResults}
+            />
+            <ClearButton 
+              type="button"
+              show={searchQuery.length > 0}
+              onClick={handleClearSearch}
+            >
+              <X size={16} />
+            </ClearButton>
+          </form>
+
+          <ResultsDropdown show={showResults}>
+            {isLoading ? (
+              <MessageText>Searching...</MessageText>
+            ) : searchResults.length > 0 ? (
+              searchResults.map((school, index) => (
+                <ResultItem key={index}>
+                  <ResultTitle>{school.SCHOOL}</ResultTitle>
+                  <ResultDescription>
+                    {school.DISTRICT}, {school.REGION} • {school.LOCATION}
+                    {school.CATEGORIES && ` • ${school.CATEGORIES}`}
+                    {school.GENDER && ` • ${school.GENDER} school`}
+                  </ResultDescription>
+                </ResultItem>
+              ))
+            ) : searchQuery.length > 0 ? (
+              <MessageText>No schools found for "{searchQuery}"</MessageText>
+            ) : null}
+          </ResultsDropdown>
+        </SearchContainer>
+      </MainContent>
     </LibraryContainer>
   );
 };

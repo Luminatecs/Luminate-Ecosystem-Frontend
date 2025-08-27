@@ -5,102 +5,93 @@ import { EducationLevel, RegisterIndividualDto } from '../../models';
 import { AuthService } from '../../services/auth';
 import Logger from '../../utils/logUtils';
 import Button, { ButtonState } from '../../components/ui/Button';
+import {
+  AuthContainer,
+  AuthTitle,
+  AuthSubtitle,
+  FormGroup,
+  Label,
+  Input,
+  ErrorMessage
+} from '../../components/auth/AuthStyles';
 
 /**
- * Compact Registration Design - Matches Login UI
+ * Registration Container
  */
 const RegisterContainer = styled.div`
-  height: 100vh;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-`;
-
-const RegisterCard = styled.div`
-  display: flex;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   overflow: hidden;
-  max-width: 850px;
+  max-width: 900px;
   width: 90%;
-  height: 500px;
+  min-height: 600px;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(66, 153, 225, 0.4) 50%, transparent 100%);
+  }
 `;
 
+/**
+ * Form Section
+ */
 const FormSection = styled.div`
   flex: 1;
-  padding: 2rem;
+  padding: 3rem;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  max-height: 500px;
+  max-height: 600px;
 `;
 
+/**
+ * Welcome Section
+ */
 const WelcomeSection = styled.div`
   flex: 1;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #2c5282 0%, #4299e1 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
+  padding: 3rem;
   color: white;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
 `;
 
-const Title = styled.h1`
-  color: #1e293b;
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-`;
-
-const Subtitle = styled.p`
-  color: #64748b;
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
-`;
-
+/**
+ * Form Component
+ */
 const Form = styled.form`
   width: 100%;
   flex: 1;
   overflow-y: auto;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 1rem;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 0.375rem;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background: #f8fafc;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-
-  &:focus {
-    outline: none;
-    border-color: #6366f1;
-    background: white;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
-  }
-
-  &:invalid {
-    border-color: #ef4444;
-  }
 `;
 
 const Select = styled.select`
@@ -141,16 +132,9 @@ const CheckboxLabel = styled.label`
   cursor: pointer;
 `;
 
-export const ErrorMessage = styled.div`
-  background: #fed7d7;
-  color: #c53030;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  border-left: 4px solid #f56565;
-`;
-
+/**
+ * Back Link
+ */
 const BackLink = styled.div`
   text-align: center;
   margin-top: 1rem;
@@ -332,12 +316,12 @@ const IndividualRegistrationPage: React.FC = () => {
   };
 
   return (
-    <RegisterContainer>
-      <RegisterCard>
+    <AuthContainer>
+      <RegisterContainer>
         <FormSection>
           <div>
-            <Title>Create Individual Account</Title>
-            <Subtitle>Join as an individual student for personalized career guidance</Subtitle>
+            <AuthTitle>Create Individual Account</AuthTitle>
+            <AuthSubtitle>Join as an individual student for personalized career guidance</AuthSubtitle>
           </div>
           
           <Form onSubmit={handleSubmit} noValidate>
@@ -509,8 +493,8 @@ const IndividualRegistrationPage: React.FC = () => {
             Join thousands of students who have discovered their career path with our personalized guidance platform.
           </WelcomeText>
         </WelcomeSection>
-      </RegisterCard>
-    </RegisterContainer>
+      </RegisterContainer>
+    </AuthContainer>
   );
 };
 
