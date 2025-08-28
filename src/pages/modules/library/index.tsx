@@ -57,7 +57,7 @@ const MainContent = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  /* padding: 2rem; */
   position: relative;
 `;
 
@@ -71,7 +71,7 @@ const Logo = styled.div`
   text-align: center;
   
   .luminate {
-    background: linear-gradient(135deg, #4285f4 0%, #34a853 25%, #fbbc05 50%, #ea4335 75%, #4285f4 100%);
+    background: linear-gradient(135deg, #4285f4 25%, #fbbc05 75%, #4285f4 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -94,7 +94,7 @@ const SearchContainer = styled.div`
   width: 100%;
   max-width: 584px;
   position: relative;
-  margin-bottom: 2rem;
+  margin-bottom: 5.5rem;
 `;
 
 /**
@@ -102,36 +102,37 @@ const SearchContainer = styled.div`
  */
 const ResultsDropdown = styled.div<{ show?: boolean }>`
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
   background: #ffffff;
   border: 1px solid #dfe1e5;
-  border-top: none;
-  border-radius: 0 0 8px 8px;
+  border-radius: 8px;
   max-height: 400px;
   overflow-y: auto;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   display: ${props => props.show ? 'block' : 'none'};
+  width: 100%;
 `;
 
 /**
- * Google-style Search Input with rounded border for dropdown
+ * Google-style Search Input with rounded border
  */
-const SearchInput = styled.input<{ hasResults?: boolean }>`
+const SearchInput = styled.input`
   width: 100%;
   height: 48px;
   border: 1px solid #dfe1e5;
-  border-radius: ${props => props.hasResults ? '24px 24px 0 0' : '24px'};
+  border-radius: 24px;
   padding: 0 20px 0 48px;
   font-size: 16px;
   outline: none;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 5px 1px rgba(64,60,67,.16);
+  box-shadow: 0 2px 8px 1px rgba(66,133,244,.24);
 
   &:hover {
-    box-shadow: 0 2px 8px 1px rgba(64,60,67,.24);
+    box-shadow: 0 2px 8px 1px rgba(66,133,244,.24);
+    border-color: #dfe1e5;
   }
 
   &:focus {
@@ -306,8 +307,7 @@ const Library: React.FC = () => {
 
       <MainContent>
         <Logo>
-          <span className="luminate">Luminate</span>
-          <span className="library">Library</span>
+          <span className="luminate">Library</span>
         </Logo>
 
         <SearchContainer>
@@ -321,7 +321,6 @@ const Library: React.FC = () => {
               value={searchQuery}
               onChange={handleInputChange}
               autoComplete="off"
-              hasResults={showResults}
             />
             <ClearButton 
               type="button"

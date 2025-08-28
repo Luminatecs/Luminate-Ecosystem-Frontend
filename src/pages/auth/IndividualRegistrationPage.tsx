@@ -21,7 +21,7 @@ import {
 const RegisterContainer = styled.div`
   display: flex;
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
+  /* border-radius: 20px; */
   box-shadow: 
     0 10px 40px rgba(0, 0, 0, 0.08),
     0 4px 12px rgba(0, 0, 0, 0.05),
@@ -29,9 +29,10 @@ const RegisterContainer = styled.div`
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   overflow: hidden;
-  max-width: 900px;
-  width: 90%;
-  min-height: 600px;
+  /* max-width: 900px;
+  width: 90%; */
+  /* min-height: 600px; */
+  height: 99vh;
   position: relative;
 
   &::before {
@@ -49,12 +50,17 @@ const RegisterContainer = styled.div`
  * Form Section
  */
 const FormSection = styled.div`
-  flex: 1;
+  flex: 0.6;
   padding: 3rem;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  max-height: 600px;
+  -ms-overflow-style: none;
+  scrollbar-width: none; 
+  
+  &::-webkit-scrollbar {
+    display: none; 
+  }
+  max-height: 650px;
 `;
 
 /**
@@ -316,7 +322,7 @@ const IndividualRegistrationPage: React.FC = () => {
   };
 
   return (
-    <AuthContainer>
+    // <AuthContainer>
       <RegisterContainer>
         <FormSection>
           <div>
@@ -494,7 +500,7 @@ const IndividualRegistrationPage: React.FC = () => {
           </WelcomeText>
         </WelcomeSection>
       </RegisterContainer>
-    </AuthContainer>
+    // </AuthContainer>
   );
 };
 

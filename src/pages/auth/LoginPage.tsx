@@ -20,9 +20,9 @@ const LoginContainer = styled.div`
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  max-width: 900px;
-  width: 90%;
-  height: 550px;
+  max-width: 1000px;
+  width: 100%;
+  height: 600px;
   position: relative;
   
   &::after {
@@ -37,7 +37,7 @@ const LoginContainer = styled.div`
 `;
 
 const LoginFormSection = styled.div`
-  flex: 1;
+  flex: 1.2;
   padding: 3rem;
   display: flex;
   flex-direction: column;
@@ -112,10 +112,13 @@ const WelcomeButton = styled(Button)`
   color: white;
   width: auto;
   padding: 0.875rem 2.5rem;
+  z-index: 1;
   
   &:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.5);
+    /* transform: translateY(-1px);
+    cursor: pointer; */
   }
 `;
 
@@ -149,7 +152,6 @@ const LoginPage: React.FC = () => {
       Logger.info('LoginPage - Attempting login', { username: formData.username });
       
       const user = await login(formData.username, formData.password);
-      
       if (user) {
         Logger.success('LoginPage - Login successful', user);
         
@@ -215,10 +217,10 @@ const LoginPage: React.FC = () => {
                 {isSubmitting ? 'Signing in...' : 'Sign In'}
               </Button>
             </Form>
-            
-            <SignUpPrompt>
+      
+            {/* <SignUpPrompt>
               Don't have an account? <SignUpLink to="/register">Create one here</SignUpLink>
-            </SignUpPrompt>
+            </SignUpPrompt> */}
           </div>
         </LoginFormSection>
         

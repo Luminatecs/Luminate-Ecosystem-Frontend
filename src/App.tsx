@@ -14,7 +14,7 @@ import OrgWardRegistrationPage from './pages/auth/OrgWardRegistrationPage';
 
 // Main Pages
 import EcosystemHub from './pages/ecosystem/EcosystemHub';
-import OrganizationDashboard from './pages/dashboard/OrganizationDashboard';
+import OrganizationDashboard from './pages/Organization/OrganizationDashboard';
 import SuperAdminDashboard from './pages/admin/SuperAdminDashboard';
 
 // Debug Components (development only)
@@ -24,9 +24,6 @@ import UserRoleDebug from './components/debug/UserRoleDebug';
 import Library from './pages/modules/library/index';
 import Kaeval from './pages/modules/kaeval/index';
 import Resources from './pages/modules/resources/index';
-
-// Styles
-import './App.css';
 
 /**
  * Main Application Component
@@ -40,7 +37,7 @@ function App() {
     <Router>
       <AuthProvider>
         <div className="App">
-          <UserRoleDebug />
+          {/* <UserRoleDebug /> */}
           <Routes>
             {/* Public Authentication Routes */}
             <Route path="/" element={<LoginPage />} />

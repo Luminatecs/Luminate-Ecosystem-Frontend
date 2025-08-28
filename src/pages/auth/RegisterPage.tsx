@@ -11,19 +11,19 @@ import {
  * Register Page Container
  */
 const RegisterContainer = styled.div`
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  padding: 3rem;
-  box-shadow: 
+  /* background: rgba(255, 255, 255, 0.95); */
+  /* border-radius: 20px; */
+  /* padding: 1rem; */
+  /* box-shadow: 
     0 10px 40px rgba(0, 0, 0, 0.08),
     0 4px 12px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    inset 0 1px 0 rgba(255, 255, 255, 0.9); */
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  /* border: 1px solid rgba(255, 255, 255, 0.3); */
   width: 100%;
-  max-width: 800px;
+  max-width: 1200px;
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden; */
 
   &::before {
     content: '';
@@ -42,7 +42,7 @@ const RegisterContainer = styled.div`
 const OptionsGrid = styled.div`
   display: grid;
   gap: 1.5rem;
-  margin: 2.5rem 0;
+  margin: 1rem 0;
 
   @media (min-width: 640px) {
     grid-template-columns: 1fr 1fr;
@@ -146,7 +146,7 @@ const TokenSection = styled.div`
   border-radius: 8px;
   padding: 1.5rem;
   text-align: center;
-  margin-bottom: 2rem;
+  /* margin-bottom: 1rem; */
 `;
 
 const TokenTitle = styled.h3`
@@ -181,7 +181,7 @@ const TokenButton = styled(Link)`
 
 const BackToLogin = styled.div`
   text-align: center;
-  margin-top: 1.5rem;
+  /* margin-top: 1rem; */
   padding-top: 1.5rem;
   border-top: 1px solid #e2e8f0;
 `;

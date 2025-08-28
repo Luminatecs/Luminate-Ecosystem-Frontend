@@ -26,8 +26,8 @@ export interface PaginationConfig {
 }
 
 export interface GridAccordionTableProps {
-  columns: Column[]
-  data: any[]
+  columns?: Column[]
+  data?: any[]
   loading?: boolean
   error?: string | null
   searchable?: boolean
@@ -87,6 +87,7 @@ export interface GridAccordionTableProps {
   exportFileName?: string
   // CSV Mode props
   csvMode?: boolean
+  csvmodeonmount?: boolean
   onCsvSave?: (data: any[]) => void
 }
 
@@ -1112,6 +1113,7 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
   exportFileName = "table-data",
   // CSV Mode props
   csvMode = false,
+  csvmodeonmount = false,
   onCsvSave = () => {}
 }) => {
   // State
@@ -1123,7 +1125,7 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
   const [currentPage, setCurrentPage] = useState(1)
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null)
-  const [columnOrder, setColumnOrder] = useState<number[]>(columns.map((_, index) => index))
+  const [columnOrder, setColumnOrder] = useState<number[]>(columns?.map((_, index) => index))
 
   // New state for modals and editing
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -1145,7 +1147,7 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
 
   // Get unique filter options for each column
   const getFilterOptions = (columnKey: string) => {
-    const uniqueValues = Array.from(new Set(data.map((row) => row[columnKey]))).filter(Boolean)
+    const uniqueValues = Array.from(new Set(data.map((row) => row[columnKey])))?.filter(Boolean)
     return uniqueValues.sort()
   }
 
@@ -1154,10 +1156,10 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
     const sourceData = csvMode && csvModeActive && csvData.length > 0 ? csvData : data;
     const sourceColumns = csvMode && csvModeActive && csvColumns.length > 0 ? csvColumns : columns;
     
-    return sourceData.filter((row) => {
+    return sourceData?.filter((row) => {
       // Search filter
       if (searchTerm) {
-        const searchMatch = sourceColumns.some((col) => {
+        const searchMatch = sourceColumns?.some((col) => {
           const value = row[col.key]
           return value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
         })
@@ -1325,6 +1327,13 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
+
+  // Auto-enable CSV mode on mount if csvmodeonmount is true
+  useEffect(() => {
+    if (csvmodeonmount) {
+      setCsvModeActive(true)
+    }
+  }, [csvmodeonmount])
 
   const renderCellContent = (column: Column, value: any, row: any) => {
     if (column.render) {

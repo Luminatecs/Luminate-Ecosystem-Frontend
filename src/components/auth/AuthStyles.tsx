@@ -8,7 +8,7 @@ export const AuthContainer = styled.div`
   justify-content: center;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   position: relative;
-  padding: 2rem;
+  /* padding: 2rem; */
   
   &::before {
     content: '';
