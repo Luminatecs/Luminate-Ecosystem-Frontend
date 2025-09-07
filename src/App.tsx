@@ -16,12 +16,14 @@ import OrgWardRegistrationPage from './pages/auth/OrgWardRegistrationPage';
 import EcosystemHub from './pages/ecosystem/EcosystemHub';
 import OrganizationDashboard from './pages/Organization/OrganizationDashboard';
 import SuperAdminDashboard from './pages/admin/SuperAdminDashboard';
+import AdminSettings from './pages/admin/AdminSettings';
 
 // Debug Components (development only)
 import UserRoleDebug from './components/debug/UserRoleDebug';
 
 // Module Pages
 import Library from './pages/modules/library/index';
+import SearchResults from './pages/modules/library/SearchResults';
 import Kaeval from './pages/modules/kaeval/index';
 import Resources from './pages/modules/resources/index';
 
@@ -96,6 +98,14 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/library/search-results" 
+              element={
+                <ProtectedRoute>
+                  <SearchResults />
+                </ProtectedRoute>
+              } 
+            />            
             <Route 
               path="/kaeval" 
               element={
@@ -179,6 +189,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRoles={[UserRole.SUPER_ADMIN]}>
                   <SuperAdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/settings" 
+              element={
+                <ProtectedRoute requiredRoles={[UserRole.SUPER_ADMIN]}>
+                  <AdminSettings />
                 </ProtectedRoute>
               } 
             />

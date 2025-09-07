@@ -6,6 +6,7 @@ import {
   RegisterOrgWardDto
 } from '../../models/Auth/dtos/AuthDto';
 import { storeToken, clearAuthTokens, getToken } from '../../utils/tokenUtils';
+import { secureStorage } from '../../lib/secure-storage';
 
 // Generic API response interface
 export interface ApiResponse<T = any> {
@@ -43,8 +44,8 @@ class AuthServiceClass {
           storeToken(response.data.data.token);
         }
         
-        // Store user data
-        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+        // Store user data securely
+        await secureStorage.setItem('user', response.data.data.user);
       }
       
       return response.data;
@@ -62,8 +63,8 @@ class AuthServiceClass {
         // Store token
         storeToken(response.data.data.token);
         
-        // Store user data
-        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+        // Store user data securely
+        await secureStorage.setItem('user', response.data.data.user);
       }
       
       return response.data;
@@ -81,8 +82,8 @@ class AuthServiceClass {
         // Store token
         storeToken(response.data.data.token);
         
-        // Store user data
-        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+        // Store user data securely
+        await secureStorage.setItem('user', response.data.data.user);
       }
       
       return response.data;
@@ -119,7 +120,7 @@ class AuthServiceClass {
     } catch (error: any) {
       // Clear invalid token
       clearAuthTokens();
-      localStorage.removeItem('user');
+      await secureStorage.removeItem('user');
       throw new Error(error.response?.data?.error || 'Token refresh failed');
     }
   }
@@ -171,14 +172,14 @@ class AuthServiceClass {
     try {
       // Clear local storage
       clearAuthTokens();
-      localStorage.removeItem('user');
+      await secureStorage.removeItem('user');
       
 
       await apiClient.post('/auth/logout');
     } catch (error: any) {
       // Even if API call fails, clear local data
       clearAuthTokens();
-      localStorage.removeItem('user');
+      await secureStorage.removeItem('user');
     }
   }
 }

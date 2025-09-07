@@ -43,7 +43,7 @@ class LibraryServiceClass {
    */
   async searchSchoolData(query: string): Promise<LibraryApiResponse<ISchool[]>> {
     try {
-      const response = await apiClient.get<LibraryApiResponse<ISchool[]>>(`/library/schools/search?q=${encodeURIComponent(query)}`);
+      const response = await apiClient.get<LibraryApiResponse<ISchool[]>>(`/library/schools/search?searchTerm=${encodeURIComponent(query)}`);
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Failed to search school data');

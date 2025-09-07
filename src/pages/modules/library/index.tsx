@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Search, X } from 'lucide-react';
@@ -49,25 +49,26 @@ const BackButton = styled.button`
 `;
 
 /**
- * Main Content Area - Always centered for the logo and search
+ * Main Content Area - Much higher positioning
  */
 const MainContent = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  /* padding: 2rem; */
+  justify-content: flex-start;
+  padding-top: 1rem; /* Much less padding for higher positioning */
+  padding-bottom: 4rem;
   position: relative;
 `;
 
 /**
- * Google-style Logo
+ * Google-style Logo - Smaller and higher
  */
 const Logo = styled.div`
-  font-size: 6rem;
+  font-size: 4.5rem; /* Even smaller */
   font-weight: 400;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem; /* Reduced margin */
   text-align: center;
   
   .luminate {
@@ -88,13 +89,13 @@ const Logo = styled.div`
 `;
 
 /**
- * Search Container with dropdown
+ * Search Container with dropdown - Much higher
  */
 const SearchContainer = styled.div`
   width: 100%;
   max-width: 584px;
   position: relative;
-  margin-bottom: 5.5rem;
+  margin-bottom: 2rem; /* Minimal margin */
 `;
 
 /**
@@ -293,6 +294,11 @@ const Library: React.FC = () => {
     setShowResults(false);
   };
 
+  const handleSchoolClick = (school: ISchool) => {
+    // Navigate to SearchResults page with school data
+    navigate('/library/search-results', { state: { school } });
+  };
+
   const handleBackToEcosystem = () => {
     navigate('/ecosystem');
   };
@@ -317,7 +323,7 @@ const Library: React.FC = () => {
             </SearchIconContainer>
             <SearchInput
               type="text"
-              placeholder="Search for schools, districts, programs..."
+              placeholder="Search for schools by region, courses..."
               value={searchQuery}
               onChange={handleInputChange}
               autoComplete="off"
@@ -336,7 +342,10 @@ const Library: React.FC = () => {
               <MessageText>Searching...</MessageText>
             ) : searchResults.length > 0 ? (
               searchResults.map((school, index) => (
-                <ResultItem key={index}>
+                <ResultItem 
+                  key={index}
+                  onClick={() => handleSchoolClick(school)}
+                >
                   <ResultTitle>{school.SCHOOL}</ResultTitle>
                   <ResultDescription>
                     {school.DISTRICT}, {school.REGION} • {school.LOCATION}

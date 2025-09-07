@@ -2,8 +2,9 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { UserRole, EducationLevel } from '../../models';
 import { AuthService } from '../../services/auth';
 import { storeToken, storeRefreshToken, storeTokenExpiration, clearAuthTokens } from '../../utils/tokenUtils';
+import { secureStorage } from '../../lib/secure-storage';
 import Logger from '../../utils/logUtils';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * User Interface for Auth Context
@@ -31,62 +32,128 @@ interface AuthOrganization {
 }
 
 /**
- * localStorage Keys
+ * Secure storage Keys
  */
 const STORAGE_KEYS = {
-  USER: 'auth_user',
-  ORGANIZATION: 'auth_organization',
+  USER: 'auth_user_data',
+  ORGANIZATION: 'auth_organization_data',
   IS_AUTHENTICATED: 'auth_is_authenticated',
+  SESSION_DATA: 'auth_session_data'
 } as const;
 
 /**
- * Helper functions for localStorage operations
+ * Helper functions for secure storage operations
  */
-const StorageHelper = {
-  // Save user data to localStorage
-  saveUser: (user: AuthUser) => {
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-    localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, 'true');
-  },
-
-  // Save organization data to localStorage
-  saveOrganization: (organization: AuthOrganization) => {
-    localStorage.setItem(STORAGE_KEYS.ORGANIZATION, JSON.stringify(organization));
-  },
-
-  // Get user data from localStorage
-  getUser: (): AuthUser | null => {
+const SecureStorageHelper = {
+  // Save user data to secure storage
+  saveUser: async (user: AuthUser) => {
     try {
-      const userData = localStorage.getItem(STORAGE_KEYS.USER);
-      return userData ? JSON.parse(userData) : null;
+      await secureStorage.setItem(STORAGE_KEYS.USER, user);
+      await secureStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, true);
+      Logger.info('SecureStorageHelper: User data saved to encrypted storage');
     } catch (error) {
-      Logger.error('Failed to parse user data from localStorage:', error);
+      Logger.error('SecureStorageHelper: Failed to save user data:', error);
+      throw error;
+    }
+  },
+
+  // Save organization data to secure storage
+  saveOrganization: async (organization: AuthOrganization) => {
+    try {
+      await secureStorage.setItem(STORAGE_KEYS.ORGANIZATION, organization);
+      Logger.info('SecureStorageHelper: Organization data saved to encrypted storage');
+    } catch (error) {
+      Logger.error('SecureStorageHelper: Failed to save organization data:', error);
+      throw error;
+    }
+  },
+
+  // Get user data from secure storage
+  getUser: async (): Promise<AuthUser | null> => {
+    try {
+      const user = await secureStorage.getItem<AuthUser>(STORAGE_KEYS.USER);
+      return user;
+    } catch (error) {
+      Logger.error('SecureStorageHelper: Failed to get user data:', error);
       return null;
     }
   },
 
-  // Get organization data from localStorage
-  getOrganization: (): AuthOrganization | null => {
+  // Get organization data from secure storage
+  getOrganization: async (): Promise<AuthOrganization | null> => {
     try {
-      const orgData = localStorage.getItem(STORAGE_KEYS.ORGANIZATION);
-      return orgData ? JSON.parse(orgData) : null;
+      const organization = await secureStorage.getItem<AuthOrganization>(STORAGE_KEYS.ORGANIZATION);
+      return organization;
     } catch (error) {
-      Logger.error('Failed to parse organization data from localStorage:', error);
+      Logger.error('SecureStorageHelper: Failed to get organization data:', error);
       return null;
     }
   },
 
   // Check if user is authenticated
-  isAuthenticated: (): boolean => {
-    return localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true';
+  isAuthenticated: async (): Promise<boolean> => {
+    try {
+      const isAuth = await secureStorage.getItem<boolean>(STORAGE_KEYS.IS_AUTHENTICATED);
+      return isAuth === true;
+    } catch (error) {
+      Logger.error('SecureStorageHelper: Failed to check authentication status:', error);
+      return false;
+    }
   },
 
-  // Clear all auth data from localStorage
-  clearAll: () => {
-    localStorage.removeItem(STORAGE_KEYS.USER);
-    localStorage.removeItem(STORAGE_KEYS.ORGANIZATION);
-    localStorage.removeItem(STORAGE_KEYS.IS_AUTHENTICATED);
-    clearAuthTokens(); // Clear tokens too
+  // Save complete session data
+  saveSession: async (user: AuthUser, organization?: AuthOrganization) => {
+    try {
+      const sessionData = {
+        user,
+        organization,
+        timestamp: Date.now(),
+        expiresAt: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
+      };
+      await secureStorage.setItem(STORAGE_KEYS.SESSION_DATA, sessionData);
+      await secureStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, true);
+      Logger.info('SecureStorageHelper: Complete session saved to encrypted storage');
+    } catch (error) {
+      Logger.error('SecureStorageHelper: Failed to save session:', error);
+      throw error;
+    }
+  },
+
+  // Get complete session data
+  getSession: async (): Promise<{ user: AuthUser; organization?: AuthOrganization } | null> => {
+    try {
+      const sessionData = await secureStorage.getItem<any>(STORAGE_KEYS.SESSION_DATA);
+      if (!sessionData) return null;
+
+      // Check if session has expired
+      if (Date.now() > sessionData.expiresAt) {
+        Logger.warn('SecureStorageHelper: Session expired, clearing data');
+        await SecureStorageHelper.clearAll();
+        return null;
+      }
+
+      return {
+        user: sessionData.user,
+        organization: sessionData.organization
+      };
+    } catch (error) {
+      Logger.error('SecureStorageHelper: Failed to get session data:', error);
+      return null;
+    }
+  },
+
+  // Clear all auth data from secure storage
+  clearAll: async () => {
+    try {
+      secureStorage.removeItem(STORAGE_KEYS.USER);
+      secureStorage.removeItem(STORAGE_KEYS.ORGANIZATION);
+      secureStorage.removeItem(STORAGE_KEYS.IS_AUTHENTICATED);
+      secureStorage.removeItem(STORAGE_KEYS.SESSION_DATA);
+      await clearAuthTokens(); // Clear encrypted tokens too
+      Logger.info('SecureStorageHelper: All auth data cleared from encrypted storage');
+    } catch (error) {
+      Logger.error('SecureStorageHelper: Failed to clear auth data:', error);
+    }
   },
 };
 
@@ -130,17 +197,16 @@ interface AuthProviderProps {
 
 /**
  * Auth Provider Component
- * SIMPLE & PERSISTENT: Uses localStorage for all auth state
+ * SIMPLE & PERSISTENT: Uses encrypted secure storage for all auth state
  */
 export function AuthProvider({ children }: AuthProviderProps) {
-  // Simple state using useState - gets data from localStorage
-  const [isLoading, setIsLoading] = useState(false);
+  // State using useState - gets data from encrypted secure storage
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [organization, setOrganization] = useState<AuthOrganization | null>(null);
   
-  // Get current auth state from localStorage
-  const isAuthenticated = StorageHelper.isAuthenticated();
-  const user = StorageHelper.getUser();
-  const organization = StorageHelper.getOrganization();
   const navigate = useNavigate();
 
   /**
@@ -150,23 +216,49 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Check if we have stored auth data
-        if (isAuthenticated && user) {
-          Logger.success('AuthProvider: User session restored from localStorage', { 
-            userId: user.id, 
-            role: user.role 
+        setIsLoading(true);
+        
+        // Try to load session from encrypted storage
+        const session = await SecureStorageHelper.getSession();
+        
+        if (session) {
+          setUser(session.user);
+          setOrganization(session.organization || null);
+          setIsAuthenticated(true);
+          
+          Logger.success('AuthProvider: User session restored from encrypted storage', { 
+            userId: session.user.id, 
+            role: session.user.role 
           });
         } else {
-          Logger.info('AuthProvider: No stored session found - user starts unauthenticated');
+          // Check individual items as fallback
+          const storedUser = await SecureStorageHelper.getUser();
+          const storedOrganization = await SecureStorageHelper.getOrganization();
+          const isAuth = await SecureStorageHelper.isAuthenticated();
+          
+          if (storedUser && isAuth) {
+            setUser(storedUser);
+            setOrganization(storedOrganization);
+            setIsAuthenticated(true);
+            
+            Logger.success('AuthProvider: User session restored from individual encrypted items');
+          } else {
+            Logger.info('AuthProvider: No stored session found - user starts unauthenticated');
+          }
         }
       } catch (error) {
         Logger.error('AuthProvider: Session initialization failed', error);
-        StorageHelper.clearAll();
+        await SecureStorageHelper.clearAll();
+        setUser(null);
+        setOrganization(null);
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     initializeAuth();
-  }, [isAuthenticated, user]);
+  }, []);
 
   /**
    * Login function
@@ -217,10 +309,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
           contactEmail: response.data.organization.contactEmail,
         } : undefined;
 
-        // Save to localStorage
-        StorageHelper.saveUser(user);
+        // Save to encrypted storage
+        await SecureStorageHelper.saveUser(user);
         if (organization) {
-          StorageHelper.saveOrganization(organization);
+          await SecureStorageHelper.saveOrganization(organization);
+        }
+
+        // Update React state - THIS WAS MISSING!
+        setUser(user);
+        setIsAuthenticated(true);
+        if (organization) {
+          setOrganization(organization);
         }
 
         setIsLoading(false);
@@ -241,27 +340,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   /**
    * Logout function
-   * PERSISTENT: Clears all localStorage data
+   * PERSISTENT: Clears all encrypted storage data
    */
   const logout = async (): Promise<void> => {
     try {
       await AuthService.logout();
-      StorageHelper.clearAll();
+      await SecureStorageHelper.clearAll();
+      
+      // Update React state - THIS WAS MISSING!
+      setUser(null);
+      setOrganization(null);
+      setIsAuthenticated(false);
       setError(null);
+      
       navigate('/login');
       Logger.success('AuthProvider: Logout successful');
     } catch (error) {
       Logger.error('AuthProvider: Logout failed', error);
       // Still clear storage even if API call fails
-      StorageHelper.clearAll();
+      await SecureStorageHelper.clearAll();
+      
+      // Update React state even if API call fails
+      setUser(null);
+      setOrganization(null);
+      setIsAuthenticated(false);
       setError(null);
+      
       throw error;
     }
   };
 
   /**
    * Refresh token function
-   * PERSISTENT: Updates tokens in localStorage
+   * PERSISTENT: Updates tokens in encrypted storage
    */
   const refreshToken = async (): Promise<void> => {
     try {
@@ -269,7 +380,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       Logger.success('AuthProvider: Token refreshed successfully');
     } catch (error) {
       Logger.error('AuthProvider: Token refresh failed', error);
-      StorageHelper.clearAll();
+      await SecureStorageHelper.clearAll();
       throw error;
     }
   };

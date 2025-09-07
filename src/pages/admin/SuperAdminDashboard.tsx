@@ -21,7 +21,7 @@ const DashboardContainer = styled.div`
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   width: 100%;
-  max-width: 800px;
+  /* max-width: 1200px; */
   position: relative;
   overflow: hidden;
 
@@ -43,10 +43,23 @@ const OptionsGrid = styled.div`
   display: grid;
   gap: 2rem;
   margin: 2.5rem 0;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
+  justify-items: center;
+
+  /* Third item (if exists) should be centered */
+  & > *:nth-child(3) {
+    grid-column: 1 / -1;
+    max-width: 400px;
+    width: 100%;
+  }
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    
+    & > *:nth-child(3) {
+      grid-column: 1;
+      max-width: none;
+    }
   }
 `;
 
@@ -59,7 +72,7 @@ const OptionCard = styled.button`
   background: rgba(255, 255, 255, 0.9);
   border: 2px solid rgba(66, 153, 225, 0.1);
   border-radius: 16px;
-  padding: 2.5rem;
+  padding: 1.5rem;
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
@@ -187,6 +200,14 @@ const SuperAdminDashboard: React.FC = () => {
             <OptionTitle>Organization Dashboard</OptionTitle>
             <OptionDescription>
               Manage organizations, monitor system-wide analytics, and oversee administrative functions
+            </OptionDescription>
+          </OptionCard>
+
+          <OptionCard onClick={() => handleNavigation('/admin/settings')}>
+            <OptionIcon className="icon">⚙️</OptionIcon>
+            <OptionTitle>Settings & Resources</OptionTitle>
+            <OptionDescription>
+              Manage system settings, create and edit resources for students, parents, and counselors
             </OptionDescription>
           </OptionCard>
         </OptionsGrid>

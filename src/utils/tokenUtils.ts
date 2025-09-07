@@ -1,19 +1,21 @@
 /**
  * Token utility functions for React web application
- * Handles JWT token storage and retrieval using localStorage
+ * Handles JWT token storage and retrieval using encrypted secure storage
  */
 
-// Storage keys
-const TOKEN_KEY = 'userToken';
-const REFRESH_TOKEN_KEY = 'refreshToken';
-const TOKEN_EXPIRATION_KEY = 'expires_In';
+import { secureStorage } from '../lib/secure-storage';
+
+// Secure storage keys
+const TOKEN_KEY = 'auth_user_token';
+const REFRESH_TOKEN_KEY = 'auth_refresh_token';
+const TOKEN_EXPIRATION_KEY = 'auth_token_expiration';
 
 /**
  * Helper function to check if the current token is expired
  */
 export const isTokenExpired = async (): Promise<boolean> => {
   try {
-    const expiresInStr = localStorage.getItem(TOKEN_EXPIRATION_KEY);
+    const expiresInStr = await secureStorage.getItem<string>(TOKEN_EXPIRATION_KEY);
     if (!expiresInStr) return true; // No expiration date means we should refresh
     
     // Handle both ISO date strings and millisecond timestamps
@@ -47,7 +49,7 @@ export const isTokenExpired = async (): Promise<boolean> => {
  */
 export const getToken = async (): Promise<string | null> => {
   try {
-    return localStorage.getItem(TOKEN_KEY);
+    return await secureStorage.getItem<string>(TOKEN_KEY);
   } catch (error) {
     console.error('Error getting token:', error);
     return null;
@@ -59,7 +61,7 @@ export const getToken = async (): Promise<string | null> => {
  */
 export const getRefreshToken = async (): Promise<string | null> => {
   try {
-    return localStorage.getItem(REFRESH_TOKEN_KEY);
+    return await secureStorage.getItem<string>(REFRESH_TOKEN_KEY);
   } catch (error) {
     console.error('Error getting refresh token:', error);
     return null;
@@ -71,7 +73,7 @@ export const getRefreshToken = async (): Promise<string | null> => {
  */
 export const storeToken = async (token: string): Promise<void> => {
   try {
-    localStorage.setItem(TOKEN_KEY, token);
+    await secureStorage.setItem(TOKEN_KEY, token);
   } catch (error) {
     console.error('Error storing token:', error);
   }
@@ -82,7 +84,7 @@ export const storeToken = async (token: string): Promise<void> => {
  */
 export const storeRefreshToken = async (token: string): Promise<void> => {
   try {
-    localStorage.setItem(REFRESH_TOKEN_KEY, token);
+    await secureStorage.setItem(REFRESH_TOKEN_KEY, token);
   } catch (error) {
     console.error('Error storing refresh token:', error);
   }
@@ -93,7 +95,7 @@ export const storeRefreshToken = async (token: string): Promise<void> => {
  */
 export const storeTokenExpiration = async (expiresIn: string): Promise<void> => {
   try {
-    localStorage.setItem(TOKEN_EXPIRATION_KEY, expiresIn);
+    await secureStorage.setItem(TOKEN_EXPIRATION_KEY, expiresIn);
   } catch (error) {
     console.error('Error storing token expiration:', error);
   }
@@ -104,9 +106,9 @@ export const storeTokenExpiration = async (expiresIn: string): Promise<void> => 
  */
 export const clearAuthTokens = async (): Promise<void> => {
   try {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    localStorage.removeItem(TOKEN_EXPIRATION_KEY);
+    secureStorage.removeItem(TOKEN_KEY);
+    secureStorage.removeItem(REFRESH_TOKEN_KEY);
+    secureStorage.removeItem(TOKEN_EXPIRATION_KEY);
   } catch (error) {
     console.error('Error clearing auth tokens:', error);
   }
@@ -131,7 +133,7 @@ export const hasAuthTokens = async (): Promise<boolean> => {
  */
 export const getTokenExpiration = async (): Promise<Date | null> => {
   try {
-    const expiresInStr = localStorage.getItem(TOKEN_EXPIRATION_KEY);
+    const expiresInStr = await secureStorage.getItem<string>(TOKEN_EXPIRATION_KEY);
     if (!expiresInStr) return null;
     return new Date(expiresInStr);
   } catch (error) {
