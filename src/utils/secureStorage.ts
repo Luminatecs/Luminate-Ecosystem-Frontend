@@ -5,7 +5,7 @@
 
 import { clientEncryption, EncryptedData } from './encryption';
 
-export class SecureLocalStorage {
+export class SecuresessionStorage {
   private encryptionKey: string;
 
   constructor() {
@@ -61,13 +61,13 @@ export class SecureLocalStorage {
   }
 
   /**
-   * Encrypts and stores data in localStorage
+   * Encrypts and stores data in sessionStorage
    */
   public async setItem(key: string, value: any): Promise<void> {
     try {
       const jsonValue = JSON.stringify(value);
       const encrypted = await clientEncryption.encrypt(jsonValue, this.encryptionKey);
-      localStorage.setItem(`luminate_secure_${key}`, JSON.stringify(encrypted));
+      sessionStorage.setItem(`luminate_secure_${key}`, JSON.stringify(encrypted));
     } catch (error) {
       console.error('Failed to encrypt and store data:', error);
       throw new Error('Failed to store secure data');
@@ -75,11 +75,11 @@ export class SecureLocalStorage {
   }
 
   /**
-   * Retrieves and decrypts data from localStorage
+   * Retrieves and decrypts data from sessionStorage
    */
   public async getItem<T = any>(key: string): Promise<T | null> {
     try {
-      const encryptedData = localStorage.getItem(`luminate_secure_${key}`);
+      const encryptedData = sessionStorage.getItem(`luminate_secure_${key}`);
       if (!encryptedData) return null;
 
       const encrypted: EncryptedData = JSON.parse(encryptedData);
@@ -92,20 +92,20 @@ export class SecureLocalStorage {
   }
 
   /**
-   * Removes item from localStorage
+   * Removes item from sessionStorage
    */
   public removeItem(key: string): void {
-    localStorage.removeItem(`luminate_secure_${key}`);
+    sessionStorage.removeItem(`luminate_secure_${key}`);
   }
 
   /**
    * Clears all secure items
    */
   public clear(): void {
-    const keys = Object.keys(localStorage);
+    const keys = Object.keys(sessionStorage);
     keys.forEach(key => {
       if (key.startsWith('luminate_secure_')) {
-        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
       }
     });
   }
@@ -114,7 +114,7 @@ export class SecureLocalStorage {
    * Lists all secure storage keys (without the prefix)
    */
   public getKeys(): string[] {
-    const keys = Object.keys(localStorage);
+    const keys = Object.keys(sessionStorage);
     return keys
       .filter(key => key.startsWith('luminate_secure_'))
       .map(key => key.replace('luminate_secure_', ''));
@@ -270,13 +270,13 @@ export class SecureLocalStorage {
    * Gets storage statistics
    */
   public getStorageStats(): { totalKeys: number; secureKeys: number; estimatedSize: string } {
-    const allKeys = Object.keys(localStorage);
+    const allKeys = Object.keys(sessionStorage);
     const secureKeys = allKeys.filter(key => key.startsWith('luminate_secure_'));
     
     // Estimate size (rough calculation)
     let totalSize = 0;
     secureKeys.forEach(key => {
-      const value = localStorage.getItem(key);
+      const value = sessionStorage.getItem(key);
       if (value) {
         totalSize += key.length + value.length;
       }
@@ -291,4 +291,4 @@ export class SecureLocalStorage {
 }
 
 // Create singleton instance
-export const secureStorage = new SecureLocalStorage();
+export const secureStorage = new SecuresessionStorage();

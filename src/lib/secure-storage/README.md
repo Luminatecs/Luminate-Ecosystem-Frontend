@@ -151,16 +151,16 @@ console.log(decrypted); // "user's private information"
 ### Core Storage Methods
 
 #### `secureStorage.setItem(key: string, value: any): Promise<void>`
-Encrypts and stores data in localStorage.
+Encrypts and stores data in sessionStorage.
 
 #### `secureStorage.getItem<T>(key: string): Promise<T | null>`
-Retrieves and decrypts data from localStorage.
+Retrieves and decrypts data from sessionStorage.
 
 #### `secureStorage.removeItem(key: string): void`
-Removes encrypted data from localStorage.
+Removes encrypted data from sessionStorage.
 
 #### `secureStorage.clear(): void`
-Removes all encrypted data from localStorage.
+Removes all encrypted data from sessionStorage.
 
 ### Specialized Storage Methods
 
@@ -221,7 +221,7 @@ Returns statistics about encrypted storage usage.
 - No encryption keys are stored persistently
 
 ### Data Protection
-- All sensitive data is encrypted before localStorage storage
+- All sensitive data is encrypted before sessionStorage storage
 - Decryption failures result in automatic data cleanup
 - No plain text sensitive data is ever stored
 - Memory-safe encryption operations
@@ -255,12 +255,12 @@ const { preferences }: { preferences: UserPreferences } = useUserPreferences();
 
 ## Migration Guide
 
-### From localStorage
+### From sessionStorage
 
 ```typescript
 // Before
-localStorage.setItem('user-data', JSON.stringify(userData));
-const userData = JSON.parse(localStorage.getItem('user-data') || '{}');
+sessionStorage.setItem('user-data', JSON.stringify(userData));
+const userData = JSON.parse(sessionStorage.getItem('user-data') || '{}');
 
 // After
 await secureStorage.setItem('user-data', userData);
@@ -291,7 +291,7 @@ await secureStorage.setItem('temp-data', tempData);
 2. **Handle errors** gracefully with try-catch blocks
 3. **Use TypeScript** types for type safety
 4. **Test encryption** with `testEncryption()` during development
-5. **Monitor storage** usage to prevent localStorage limits
+5. **Monitor storage** usage to prevent sessionStorage limits
 6. **Clear sensitive data** when no longer needed
 
 ## Troubleshooting

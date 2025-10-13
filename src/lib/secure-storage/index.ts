@@ -9,7 +9,7 @@
  * - AES-GCM encryption with Web Crypto API
  * - Session-based encryption keys with browser fingerprinting
  * - React hooks for state management with encrypted storage
- * - Automatic encryption/decryption with localStorage
+ * - Automatic encryption/decryption with sessionStorage
  * 
  * @usage
  * ```typescript
@@ -50,7 +50,7 @@ export { clientEncryption, ClientEncryptionService } from './encryption';
 export type { EncryptedData } from './encryption';
 
 // Secure storage service
-export { secureStorage, SecureLocalStorage } from './secureStorage';
+export { secureStorage, SecuresessionStorage } from './secureStorage';
 
 // React hooks
 export {

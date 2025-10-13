@@ -167,6 +167,91 @@ class AuthServiceClass {
     }
   }
 
+  // Login with temporary code
+  async loginWithTempCode(tempCode: string, password: string): Promise<ApiResponse> {
+    try {
+      console.log('🔐 AuthService: Login with temp code');
+      const response = await apiClient.post<ApiResponse>('/auth/temp-login', {
+        tempCode,
+        password
+      });
+      
+      if (response.data.success && response.data.data) {
+        // Store token
+        storeToken(response.data.data.accessToken);
+        
+        // Store user data securely
+        await secureStorage.setItem('user', response.data.data.user);
+      }
+      
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Temporary login failed');
+    }
+  }
+
+  // Change temporary password
+  async changeTempPassword(
+    tempCode: string,
+    newUsername: string,
+    newPassword: string
+  ): Promise<ApiResponse> {
+    try {
+      console.log('🔐 AuthService: Changing temporary password');
+      const response = await apiClient.post<ApiResponse>('/auth/change-temp-password', {
+        tempCode,
+        newUsername,
+        newPassword
+      });
+      
+      if (response.data.success) {
+        // Clear tokens after password change
+        clearAuthTokens();
+        await secureStorage.removeItem('user');
+      }
+      
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to change password');
+    }
+  }
+
+  // Request password reset
+  async forgotPassword(email: string): Promise<ApiResponse> {
+    try {
+      console.log('📧 AuthService: Requesting password reset');
+      const response = await apiClient.post<ApiResponse>('/auth/forgot-password', { email });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to request password reset');
+    }
+  }
+
+  // Reset password with token
+  async resetPassword(token: string, newPassword: string): Promise<ApiResponse> {
+    try {
+      console.log('🔐 AuthService: Resetting password');
+      const response = await apiClient.post<ApiResponse>('/auth/reset-password', {
+        token,
+        newPassword
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to reset password');
+    }
+  }
+
+  // Validate reset token
+  async validateResetToken(token: string): Promise<ApiResponse> {
+    try {
+      console.log('🔍 AuthService: Validating reset token');
+      const response = await apiClient.get<ApiResponse>(`/auth/validate-reset-token/${token}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to validate token');
+    }
+  }
+
   // Logout
   async logout(): Promise<void> {
     try {

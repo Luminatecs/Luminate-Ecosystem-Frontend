@@ -5,6 +5,137 @@ import { storeToken, storeRefreshToken, storeTokenExpiration, clearAuthTokens } 
 import { secureStorage } from '../../lib/secure-storage';
 import Logger from '../../utils/logUtils';
 import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
+
+/**
+ * COOKIE DATA INTERFACE FOR SUB-APPLICATIONS
+ * ==========================================
+ * 
+ * This system stores user session data in a cookie named 'luminate_user_session' for sub-applications.
+ * The cookie contains unencrypted JSON data with the following structure:
+ * 
+ * Cookie Name: 'luminate_user_session'
+ * Cookie Value: JSON stringified object with this interface:
+ * 
+ * interface LuminateUserSessionCookie {
+ *   user: {
+ *     id: string;
+ *     name: string;
+ *     email: string;
+ *     role: 'SUPER_ADMIN' | 'ORG_ADMIN' | 'ORG_WARD' | 'INDIVIDUAL';
+ *     educationLevel?: 'PRIMARY' | 'SECONDARY' | 'TERTIARY' | 'VOCATIONAL' | 'OTHER';
+ *     organizationId?: string;
+ *     organizationSetupComplete?: boolean;
+ *     isOrgWard: boolean;
+ *     isActive: boolean;
+ *     emailVerified: boolean;
+ *   };
+ *   organization?: {
+ *     id: string;
+ *     name: string;
+ *     contactEmail: string;
+ *   };
+ *   timestamp: number; // Unix timestamp when cookie was created
+ * }
+ * 
+ * USAGE IN SUB-APPLICATIONS:
+ * ==========================
+ * 
+ * // JavaScript/TypeScript example:
+ * import Cookies from 'js-cookie';
+ * 
+ * const sessionData = Cookies.get('luminate_user_session');
+ * if (sessionData) {
+ *   const userData = JSON.parse(sessionData);
+ *   console.log('User:', userData.user);
+ *   console.log('Organization:', userData.organization); // may be undefined
+ * }
+ * 
+ * // PHP example:
+ * $sessionData = $_COOKIE['luminate_user_session'] ?? null;
+ * if ($sessionData) {
+ *   $userData = json_decode($sessionData, true);
+ *   $user = $userData['user'];
+ *   $organization = $userData['organization'] ?? null;
+ * }
+ * 
+ * NOTES:
+ * ======
+ * - Cookie expires in 24 hours
+ * - Cookie is NOT encrypted (unlike internal secure storage)
+ * - Organization data only included if user belongs to an organization
+ * - Cookie is set on successful login and cleared on logout
+ */
+
+/**
+ * Cookie Utility for Sub-Application Data Sharing
+ */
+const CookieHelper = {
+  COOKIE_NAME: 'luminate_user_session',
+  EXPIRES_HOURS: 24,
+
+  /**
+   * Store user and organization data in cookie for sub-applications
+   */
+  storeUserSession: (user: AuthUser, organization?: AuthOrganization) => {
+    try {
+      const sessionData = {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          educationLevel: user.educationLevel,
+          organizationId: user.organizationId,
+          organizationSetupComplete: user.organizationSetupComplete,
+          isOrgWard: user.isOrgWard,
+          isActive: user.isActive,
+          emailVerified: user.emailVerified,
+        },
+        ...(organization && { organization }),
+        timestamp: Date.now()
+      };
+
+      Cookies.set(CookieHelper.COOKIE_NAME, JSON.stringify(sessionData), {
+        expires: CookieHelper.EXPIRES_HOURS / 24, // Convert hours to days
+        secure: window.location.protocol === 'https:', // Only secure in production
+        sameSite: 'lax' // Allow sharing with sub-applications on same site
+      });
+
+      Logger.info('CookieHelper: User session stored in cookie for sub-applications', {
+        userId: user.id,
+        hasOrganization: !!organization
+      });
+    } catch (error) {
+      Logger.error('CookieHelper: Failed to store user session in cookie:', error);
+    }
+  },
+
+  /**
+   * Clear user session cookie
+   */
+  clearUserSession: () => {
+    try {
+      Cookies.remove(CookieHelper.COOKIE_NAME);
+      Logger.info('CookieHelper: User session cookie cleared');
+    } catch (error) {
+      Logger.error('CookieHelper: Failed to clear user session cookie:', error);
+    }
+  },
+
+  /**
+   * Get user session from cookie (for debugging/testing)
+   */
+  getUserSession: () => {
+    try {
+      const sessionData = Cookies.get(CookieHelper.COOKIE_NAME);
+      return sessionData ? JSON.parse(sessionData) : null;
+    } catch (error) {
+      Logger.error('CookieHelper: Failed to get user session from cookie:', error);
+      return null;
+    }
+  }
+};
 
 /**
  * User Interface for Auth Context
@@ -262,7 +393,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   /**
    * Login function
-   * PERSISTENT: Stores user data in localStorage for persistence
+   * PERSISTENT: Stores user data in sessionStorage for persistence
    */
   const login = async (username: string, password: string, rememberMe = false): Promise<AuthUser> => {
     try {
@@ -289,7 +420,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           await storeTokenExpiration(expirationDate.toISOString());
         }
 
-        // Store user data in localStorage
+        // Store user data in sessionStorage
         const user: AuthUser = {
           id: response.data.user.id,
           name: response.data.user.name,
@@ -315,7 +446,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           await SecureStorageHelper.saveOrganization(organization);
         }
 
-        // Update React state - THIS WAS MISSING!
+        // Store user session in cookie for sub-applications (unencrypted)
+        CookieHelper.storeUserSession(user, organization);
+
         setUser(user);
         setIsAuthenticated(true);
         if (organization) {
@@ -347,6 +480,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await AuthService.logout();
       await SecureStorageHelper.clearAll();
       
+      // Clear user session cookie for sub-applications
+      CookieHelper.clearUserSession();
+      
       // Update React state - THIS WAS MISSING!
       setUser(null);
       setOrganization(null);
@@ -359,6 +495,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       Logger.error('AuthProvider: Logout failed', error);
       // Still clear storage even if API call fails
       await SecureStorageHelper.clearAll();
+      
+      // Clear user session cookie even if API call fails
+      CookieHelper.clearUserSession();
       
       // Update React state even if API call fails
       setUser(null);
@@ -393,7 +532,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   /**
-   * Role checking functions - use localStorage data directly
+   * Role checking functions - use sessionStorage data directly
    */
   const hasRole = (role: UserRole): boolean => {
     return user?.role === role;

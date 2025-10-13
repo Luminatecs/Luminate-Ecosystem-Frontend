@@ -21,8 +21,10 @@ import {
   ChevronLeft,
   ChevronRight,
   LucideIcon,
+  ArrowLeft,
 } from "lucide-react"
 import { ResourcesService, IResource } from "../../../services/ResourcesService"
+import { useAuth } from "../../../contexts/auth"
 
 // Types
 interface Resource {
@@ -163,6 +165,41 @@ const SearchIconWrapper = styled.div`
   top: 50%;
   transform: translateY(-50%);
   color: #94a3b8;
+`
+
+const BackToDashboardButton = styled.button`
+  position: fixed;
+  top: 1.5rem;
+  left: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #4299e1 0%, #2c5282 100%);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(66, 153, 225, 0.4);
+    background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
 `
 
 const MainContent = styled.main`
@@ -523,6 +560,13 @@ export default function Resources(): React.JSX.Element {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
+  const { user } = useAuth()
+
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN'
+
+  const handleBackToDashboard = () => {
+    navigate('/super-admin-dashboard')
+  }
 
   // Fetch resources on component mount and when activeTab changes
   useEffect(() => {
@@ -685,6 +729,14 @@ export default function Resources(): React.JSX.Element {
 
   return (
     <PageContainer>
+      {/* Back to Dashboard button for Super Admins */}
+      {isSuperAdmin && (
+        <BackToDashboardButton onClick={handleBackToDashboard}>
+          <ArrowLeft />
+          Back to Dashboard
+        </BackToDashboardButton>
+      )}
+      
       {/* Header */}
       <Header>
         <HeaderContent>

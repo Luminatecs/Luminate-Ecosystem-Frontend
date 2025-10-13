@@ -1,6 +1,6 @@
 # Secure Storage Migration Guide
 
-This guide helps you integrate the secure storage library into new projects or migrate existing localStorage implementations.
+This guide helps you integrate the secure storage library into new projects or migrate existing sessionStorage implementations.
 
 ## Quick Setup
 
@@ -24,17 +24,17 @@ your-project/
 
 No external dependencies required! The library uses only native Web APIs:
 - Web Crypto API (built into modern browsers)
-- localStorage (standard browser API)
+- sessionStorage (standard browser API)
 - React (for hooks only)
 
 ### 3. Basic Integration
 
-Replace your existing localStorage calls:
+Replace your existing sessionStorage calls:
 
 ```typescript
-// OLD: Plain localStorage
-localStorage.setItem('user-data', JSON.stringify(userData));
-const userData = JSON.parse(localStorage.getItem('user-data') || '{}');
+// OLD: Plain sessionStorage
+sessionStorage.setItem('user-data', JSON.stringify(userData));
+const userData = JSON.parse(sessionStorage.getItem('user-data') || '{}');
 
 // NEW: Encrypted secure storage
 import { secureStorage } from './lib/secure-storage';
@@ -48,8 +48,8 @@ const userData = await secureStorage.getItem('user-data') || {};
 
 ```typescript
 // OLD: Token storage
-localStorage.setItem('access_token', token);
-localStorage.setItem('refresh_token', refreshToken);
+sessionStorage.setItem('access_token', token);
+sessionStorage.setItem('refresh_token', refreshToken);
 
 // NEW: Secure token storage
 import { secureStorage } from './lib/secure-storage';
@@ -69,7 +69,7 @@ await secureStorage.setUserSession({
 ```typescript
 // OLD: Manual preference handling
 const savePreferences = (prefs) => {
-  localStorage.setItem('user_preferences', JSON.stringify(prefs));
+  sessionStorage.setItem('user_preferences', JSON.stringify(prefs));
 };
 
 // NEW: Secure preferences with hooks
@@ -90,7 +90,7 @@ function SettingsComponent() {
 // OLD: Manual form saving
 useEffect(() => {
   const timer = setInterval(() => {
-    localStorage.setItem('draft', JSON.stringify(formData));
+    sessionStorage.setItem('draft', JSON.stringify(formData));
   }, 30000);
   return () => clearInterval(timer);
 }, [formData]);
@@ -264,7 +264,7 @@ import { secureStorage } from './lib/secure-storage';
 const isSecureStorageSupported = () => {
   return typeof crypto !== 'undefined' && 
          typeof crypto.subtle !== 'undefined' &&
-         typeof localStorage !== 'undefined';
+         typeof sessionStorage !== 'undefined';
 };
 
 const storageService = {
@@ -272,9 +272,9 @@ const storageService = {
     if (isSecureStorageSupported()) {
       return secureStorage.setItem(key, value);
     } else {
-      // Fallback to regular localStorage with warning
-      console.warn('Secure storage not supported, using localStorage');
-      localStorage.setItem(key, JSON.stringify(value));
+      // Fallback to regular sessionStorage with warning
+      console.warn('Secure storage not supported, using sessionStorage');
+      sessionStorage.setItem(key, JSON.stringify(value));
     }
   },
 
@@ -282,7 +282,7 @@ const storageService = {
     if (isSecureStorageSupported()) {
       return secureStorage.getItem(key);
     } else {
-      const item = localStorage.getItem(key);
+      const item = sessionStorage.getItem(key);
       return item ? JSON.parse(item) : null;
     }
   }
@@ -299,7 +299,7 @@ import { secureStorage, clientEncryption } from '../lib/secure-storage';
 
 describe('Secure Storage', () => {
   beforeEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   test('should encrypt and decrypt data correctly', async () => {

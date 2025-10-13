@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/auth';
 import Logger from '../../utils/logUtils';
+import AuthService from '../../services/auth/AuthService';
+import { storeToken, storeRefreshToken, storeTokenExpiration } from '../../utils/tokenUtils';
+import { secureStorage } from '../../lib/secure-storage';
 import {
   AuthContainer,
   AuthTitle,
@@ -13,16 +16,17 @@ import {
   Button,
   ErrorMessage
 } from '../../components/auth/AuthStyles';
+import ecosystemBackground from '../../assets/images/ecosystembackgroundpng.png';
 
 const LoginContainer = styled.div`
   display: flex;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  background: #44bbcb;
+  /* border-radius: 16px; */
+  /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); */
   overflow: hidden;
-  max-width: 1000px;
+  /* max-width: 1000px; */
   width: 100%;
-  height: 600px;
+  height: 100vh;
   position: relative;
   
   &::after {
@@ -34,19 +38,35 @@ const LoginContainer = styled.div`
     height: 6px;
     background: linear-gradient(90deg, #4299e1 0%, #2c5282 100%);
   }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
 `;
 
 const LoginFormSection = styled.div`
-  flex: 1.2;
+  flex: 1;
   padding: 3rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
+
+  @media (max-width: 768px) {
+    padding: 2rem 1.5rem;
+    order: 2;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1.5rem 1rem;
+  }
 `;
 
 const WelcomeSection = styled.div`
-  flex: 1;
-  background: linear-gradient(135deg, #2c5282 0%, #4299e1 100%);
+  flex: 2.4;
+  background: #F3FEFF url(${ecosystemBackground}) no-repeat center center;
+  background-size: 95% 95%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -63,8 +83,21 @@ const WelcomeSection = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>') repeat;
-    background-size: 50px 50px;
+    background: rgba(243, 254, 255, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    flex: none;
+    min-height: 300px;
+    padding: 2rem 1.5rem;
+    order: 1;
+    background-size: 80% 80%;
+  }
+
+  @media (max-width: 480px) {
+    min-height: 250px;
+    padding: 1.5rem 1rem;
+    background-size: 90% 90%;
   }
 `;
 
@@ -74,6 +107,17 @@ const WelcomeTitle = styled.h1`
   margin-bottom: 1rem;
   position: relative;
   z-index: 1;
+  color: #47C2D2;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+  }
 `;
 
 const WelcomeText = styled.p`
@@ -83,42 +127,100 @@ const WelcomeText = styled.p`
   position: relative;
   z-index: 1;
   margin-bottom: 2rem;
+  color: #47C2D2;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
 `;
 
 const Form = styled.form`
   width: 100%;
 `;
 
-const SignUpPrompt = styled.div`
-  text-align: center;
-  margin-top: 1.5rem;
-  color: #4a5568;
+const PasswordInput = styled(Input)`
+  padding-right: 3rem;
 `;
 
-const SignUpLink = styled(Link)`
+const PasswordInputWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+`;
+
+
+const EyeButton = styled.button`
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #718096;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #4a5568;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  svg {
+    display: block;
+  }
+`;
+
+const ForgotPasswordLink = styled(Link)`
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 14px;
   color: #4299e1;
   text-decoration: none;
-  font-weight: 500;
   transition: color 0.2s;
-  
+
   &:hover {
     color: #2c5282;
+    text-decoration: underline;
   }
 `;
 
 const WelcomeButton = styled(Button)`
   background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: white;
+  border: 2px solid #47C2D2;
+  color: #1d7f8b;
   width: auto;
   padding: 0.875rem 2.5rem;
   z-index: 1;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.5);
+    background: #47C2D2;
+    color: white;
+    border-color: #47C2D2;
     /* transform: translateY(-1px);
     cursor: pointer; */
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 2rem;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.65rem 1.75rem;
+    font-size: 0.9rem;
   }
 `;
 
@@ -131,6 +233,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<LoginFormData>({
     username: '',
     password: ''
@@ -149,26 +252,83 @@ const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      Logger.info('LoginPage - Attempting login', { username: formData.username });
+      // Check if username is a temporary code (starts with 'lumtempcode-')
+      const isTempCode = formData.username.startsWith('lumtempcode-');
       
-      const user = await login(formData.username, formData.password);
-      if (user) {
-        Logger.success('LoginPage - Login successful', user);
+      // Clear any existing temp login flags to prevent modal from showing for regular logins
+      if (!isTempCode) {
+        sessionStorage.removeItem('needsPasswordChange');
+        sessionStorage.removeItem('tempLoginUser');
+        sessionStorage.removeItem('tempCode');
+      }
+      
+      if (isTempCode) {
+        // Handle temporary code login
+        Logger.info('LoginPage - Attempting temp code login');
         
-        // Navigate based on user role and setup status
-        if (user.role === 'SUPER_ADMIN') {
-          navigate('/super-admin-dashboard');
-        } else if (user.role === 'ORG_ADMIN') {
-          if (user.organizationSetupComplete) {
-            navigate('/organization-dashboard');
-          } else {
-            navigate('/organization/setup');
+        const response = await AuthService.loginWithTempCode(formData.username, formData.password);
+        
+        if (response.success && response.data) {
+          Logger.success('LoginPage - Temp code login successful');
+          
+          // Store authentication tokens using tokenUtils (same as regular login)
+          if (response.data.accessToken) {
+            await storeToken(response.data.accessToken);
           }
+          if (response.data.refreshToken) {
+            await storeRefreshToken(response.data.refreshToken);
+          }
+          if (response.data.expiresIn) {
+            const expirationDate = new Date();
+            expirationDate.setTime(expirationDate.getTime() + (response.data.expiresIn * 1000));
+            await storeTokenExpiration(expirationDate.toISOString());
+          }
+          
+          // Store user data in encrypted secure storage (required for AuthContext initialization)
+          await secureStorage.setItem('auth_user_data', response.data.user);
+          await secureStorage.setItem('auth_is_authenticated', true);
+          
+          // Store organization if provided
+          if (response.data.organization) {
+            await secureStorage.setItem('auth_organization_data', response.data.organization);
+          }
+          
+          // Store temp login flags and temp code in sessionStorage for password change modal
+          sessionStorage.setItem('needsPasswordChange', 'true');
+          sessionStorage.setItem('tempLoginUser', JSON.stringify(response.data.user));
+          sessionStorage.setItem('tempCode', formData.username); // Store the actual temp code
+          
+          Logger.info('LoginPage - Temp login complete, redirecting to ecosystem');
+          
+          // Full page reload to /ecosystem - AuthContext will initialize from secure storage
+          // and the password change modal will appear due to sessionStorage flags
+          window.location.href = '/ecosystem';
         } else {
-          navigate('/ecosystem');
+          throw new Error(response.error || 'Invalid temporary code or password');
         }
       } else {
-        throw new Error('Login failed');
+        // Regular username/password login
+        Logger.info('LoginPage - Attempting regular login', { username: formData.username });
+        
+        const user = await login(formData.username, formData.password);
+        if (user) {
+          Logger.success('LoginPage - Login successful', user);
+          
+          // Navigate based on user role and setup status
+          if (user.role === 'SUPER_ADMIN') {
+            navigate('/super-admin-dashboard');
+          } else if (user.role === 'ORG_ADMIN') {
+            if (user.organizationSetupComplete) {
+              navigate('/organization-dashboard');
+            } else {
+              navigate('/organization/setup');
+            }
+          } else {
+            navigate('/ecosystem');
+          }
+        } else {
+          throw new Error('Login failed');
+        }
       }
     } catch (error: any) {
       Logger.error('LoginPage - Login failed', error);
@@ -181,6 +341,17 @@ const LoginPage: React.FC = () => {
   return (
     <AuthContainer>
       <LoginContainer>
+        <WelcomeSection>
+          <WelcomeTitle>Luminate Ecosystem</WelcomeTitle>
+          <WelcomeText>
+            Empowering education through innovative technology solutions.
+            Join thousands of educators and students in transforming learning experiences.
+          </WelcomeText>
+          <WelcomeButton onClick={() => navigate('/register')}>
+            Create Account
+          </WelcomeButton>
+        </WelcomeSection>
+        
         <LoginFormSection>
           <div>
             <AuthTitle>Welcome Back</AuthTitle>
@@ -203,14 +374,36 @@ const LoginPage: React.FC = () => {
               
               <FormGroup>
                 <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="Enter your password"
-                  required
-                />
+                <PasswordInputWrapper>
+                  <PasswordInput
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="Enter your password"
+                    required
+                  />
+                  <EyeButton 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </EyeButton>
+                </PasswordInputWrapper>
+                <ForgotPasswordLink to="/forgot-password">
+                  Forgot Password?
+                </ForgotPasswordLink>
               </FormGroup>
               
               <Button type="submit" disabled={isSubmitting}>
@@ -223,17 +416,6 @@ const LoginPage: React.FC = () => {
             </SignUpPrompt> */}
           </div>
         </LoginFormSection>
-        
-        <WelcomeSection>
-          <WelcomeTitle>Luminate Ecosystem</WelcomeTitle>
-          <WelcomeText>
-            Empowering education through innovative technology solutions.
-            Join thousands of educators and students in transforming learning experiences.
-          </WelcomeText>
-          <WelcomeButton onClick={() => navigate('/register')}>
-            Create Account
-          </WelcomeButton>
-        </WelcomeSection>
       </LoginContainer>
     </AuthContainer>
   );

@@ -11,6 +11,10 @@ import IndividualRegistrationPage from './pages/auth/IndividualRegistrationPage'
 import OrganizationRegistrationPage from './pages/auth/OrganizationRegistrationPage';
 import OrganizationSetup from './pages/auth/OrganizationSetup';
 import OrgWardRegistrationPage from './pages/auth/OrgWardRegistrationPage';
+import { ForgotPasswordPage, ResetPasswordPage } from './pages/auth';
+
+// Enrollment Pages
+import { StudentEnrollmentPage, EnrollmentListPage } from './pages/enrollment';
 
 // Main Pages
 import EcosystemHub from './pages/ecosystem/EcosystemHub';
@@ -48,6 +52,10 @@ function App() {
             <Route path="/register/individual" element={<IndividualRegistrationPage />} />
             <Route path="/register/organization" element={<OrganizationRegistrationPage />} />
             <Route path="/register/student" element={<OrgWardRegistrationPage />} />
+            
+            {/* Password Reset Routes - Public */}
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             {/* Protected Routes - Require JWT Authentication */}
             
@@ -150,6 +158,25 @@ function App() {
             />
 
             {/* Organization Admin Routes */}
+            
+            {/* Student Enrollment Routes - ORG_ADMIN & ACCESS_ADMIN */}
+            <Route 
+              path="/enrollment/create" 
+              element={
+                <ProtectedRoute requiredRoles={[UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN]}>
+                  <StudentEnrollmentPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/enrollment/list" 
+              element={
+                <ProtectedRoute requiredRoles={[UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN]}>
+                  <EnrollmentListPage />
+                </ProtectedRoute>
+              } 
+            />
+            
             <Route 
               path="/admin/tokens" 
               element={

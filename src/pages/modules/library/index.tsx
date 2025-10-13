@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Search, X } from 'lucide-react';
 import LibraryService, { ISchool } from '../../../services/LibraryService';
+import { useAuth } from '../../../contexts/auth';
 
 /**
  * Google-style Library Search Container
@@ -237,10 +238,13 @@ const MessageText = styled.div`
  */
 const Library: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<ISchool[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const handleSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
@@ -300,14 +304,18 @@ const Library: React.FC = () => {
   };
 
   const handleBackToEcosystem = () => {
-    navigate('/ecosystem');
+    if (isSuperAdmin) {
+      navigate('/super-admin-dashboard');
+    } else {
+      navigate('/ecosystem');
+    }
   };
 
   return (
     <LibraryContainer>
       <Header>
         <BackButton onClick={handleBackToEcosystem}>
-          ← Back to Ecosystem
+          ← {isSuperAdmin ? 'Back to Dashboard' : 'Back to Ecosystem'}
         </BackButton>
       </Header>
 

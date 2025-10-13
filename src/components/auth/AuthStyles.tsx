@@ -77,9 +77,9 @@ export const Label = styled.label`
 
 export const Input = styled.input`
   width: 100%;
-  padding: 0.875rem 1rem;
+  padding: 0.895rem 1.1rem;
   border: 2px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: 5px;
   font-size: 1rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   background: #f8fafc;
@@ -107,7 +107,7 @@ export const Input = styled.input`
 export const Button = styled.button`
   width: 100%;
   padding: 1rem 1.5rem;
-  background: linear-gradient(135deg, #2c5282 0%, #4299e1 100%);
+  background: linear-gradient(135deg, #a5491a 0%, #F4824B 50%);
   color: white;
   border: none;
   border-radius: 10px;

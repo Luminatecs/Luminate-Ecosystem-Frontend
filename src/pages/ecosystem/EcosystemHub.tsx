@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/auth';
+import { ChangePasswordModal } from '../../components/auth/ChangePasswordModal';
 
 // Animation keyframes
 const glowPulse = keyframes`
@@ -354,7 +355,8 @@ interface Module {
   id: string;
   name: string;
   description: string;
-  path: string;
+  productionUrl: string;
+  localUrl: string;
   angle: number;
 }
 
@@ -363,21 +365,24 @@ const modules: Module[] = [
     id: 'kaeval',
     name: 'Kaeval',
     description: 'Comprehensive student evaluation and performance tracking system with advanced analytics.',
-    path: '/kaeval',
+    productionUrl: 'https://kaeval.luminateecs.com',
+    localUrl: 'http://localhost:3000',
     angle: 0
   },
   {
     id: 'library',
     name: 'Library',
     description: 'Access to educational resources, digital materials, and collaborative learning tools.',
-    path: '/library',
+    productionUrl: 'https://library.luminateecs.com',
+    localUrl: 'http://localhost:3003',
     angle: 120
   },
   {
     id: 'resources',
     name: 'Resources',
     description: 'Career guidance materials, planning tools, and professional development resources.',
-    path: '/resources',
+    productionUrl: 'https://resources.luminateecs.com',
+    localUrl: 'http://localhost:3004',
     angle: 240
   }
 ];
@@ -387,6 +392,18 @@ const EcosystemHub: React.FC = () => {
   const { logout } = useAuth();
   const [activeModule, setActiveModule] = useState<Module | null>(null);
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  // Check if user needs to change password (logged in with temp code)
+  useEffect(() => {
+    const needsPasswordChange = sessionStorage.getItem('needsPasswordChange');
+    if (needsPasswordChange === 'true') {
+      setShowPasswordModal(true);
+    }
+  }, []);
+
+  // Determine if we're in development mode
+  const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
 
   const handleModuleHover = (module: Module, event: React.MouseEvent) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -417,8 +434,17 @@ const EcosystemHub: React.FC = () => {
     setActiveModule(null);
   };
 
-  const handleModuleClick = (path: string) => {
-    navigate(path);
+  const handleModuleClick = (module: Module) => {
+    // Choose URL based on environment
+    const targetUrl = isDevelopment ? module.localUrl : module.productionUrl;
+    
+    console.log(`Navigating to ${module.name}:`, {
+      environment: isDevelopment ? 'development' : 'production',
+      url: targetUrl
+    });
+
+    // Open external application in new tab/window
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleLogout = async () => {
@@ -428,6 +454,17 @@ const EcosystemHub: React.FC = () => {
     } catch (error) {
       console.error('Logout failed:', error);
     }
+  };
+
+  const handlePasswordChanged = async () => {
+    // Clear the temp login flags
+    sessionStorage.removeItem('needsPasswordChange');
+    sessionStorage.removeItem('tempLoginUser');
+    sessionStorage.removeItem('tempCode');
+    setShowPasswordModal(false);
+    
+    // Log out and redirect to login
+    await handleLogout();
   };
 
   return (
@@ -456,7 +493,7 @@ const EcosystemHub: React.FC = () => {
               distance={280}
               onMouseEnter={(e) => handleModuleHover(module, e)}
               onMouseLeave={handleModuleLeave}
-              onClick={() => handleModuleClick(module.path)}
+              onClick={() => handleModuleClick(module)}
             >
               <ModuleCircle>
                 <ModuleName className="module-name">{module.name}</ModuleName>
@@ -481,6 +518,13 @@ const EcosystemHub: React.FC = () => {
           </>
         )}
       </HoverModal>
+
+      {/* Password Change Modal for Temp Code Users */}
+      <ChangePasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => {}} // Cannot close until password is changed
+        onPasswordChanged={handlePasswordChanged}
+      />
     </Container>
   );
 };

@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useAuth } from '../../contexts/auth';
 import { EducationLevel } from '../../models';
 import Button, { ButtonState } from '../ui/Button';
-import { AuthService } from '../../services/auth';
+import AuthService from '../../services/auth/AuthService';
 import GridAccordionTable from '../../Gridnpm';
 
 /**
@@ -468,7 +468,7 @@ const WardOnboarding: React.FC = () => {
                   searchable={true}
                   filterable={true}
                   csvMode={true}
-                  onCsvSave={handleCsvFileUpload}
+                  onCsvSave={handleCsvImport}
                   csvmodeonmount={true} 
                 />
             </div>
