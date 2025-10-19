@@ -365,7 +365,7 @@ const modules: Module[] = [
     id: 'kaeval',
     name: 'Kaeval',
     description: 'Comprehensive student evaluation and performance tracking system with advanced analytics.',
-    productionUrl: 'https://kaeval.luminateecs.com',
+    productionUrl: 'https://kaeval.luminatecs.com',
     localUrl: 'http://localhost:3000',
     angle: 0
   },
@@ -373,7 +373,7 @@ const modules: Module[] = [
     id: 'library',
     name: 'Library',
     description: 'Access to educational resources, digital materials, and collaborative learning tools.',
-    productionUrl: 'https://library.luminateecs.com',
+    productionUrl: 'https://library.luminatecs.com',
     localUrl: 'http://localhost:3003',
     angle: 120
   },
@@ -381,7 +381,7 @@ const modules: Module[] = [
     id: 'resources',
     name: 'Resources',
     description: 'Career guidance materials, planning tools, and professional development resources.',
-    productionUrl: 'https://resources.luminateecs.com',
+    productionUrl: 'https://resources.luminatecs.com',
     localUrl: 'http://localhost:3004',
     angle: 240
   }
