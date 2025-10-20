@@ -17,6 +17,7 @@ import {
   ErrorMessage
 } from '../../components/auth/AuthStyles';
 import ecosystemBackground from '../../assets/images/ecosystembackgroundpng.png';
+import { LoginDto } from '../../models';
 
 const LoginContainer = styled.div`
   display: flex;
@@ -224,17 +225,12 @@ const WelcomeButton = styled(Button)`
   }
 `;
 
-interface LoginFormData {
-  username: string;
-  password: string;
-}
-
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState<LoginFormData>({
+  const [formData, setFormData] = useState<LoginDto>({
     username: '',
     password: ''
   });

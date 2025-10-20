@@ -96,11 +96,19 @@ const CookieHelper = {
         timestamp: Date.now()
       };
 
+      // Cookies.set(CookieHelper.COOKIE_NAME, JSON.stringify(sessionData), {
+      //   expires: CookieHelper.EXPIRES_HOURS / 24, // Convert hours to days
+      //   secure: window.location.protocol === 'https:', // Only secure in production
+      //   sameSite: 'lax' // Allow sharing with sub-applications on same site
+      // });
+      
       Cookies.set(CookieHelper.COOKIE_NAME, JSON.stringify(sessionData), {
-        expires: CookieHelper.EXPIRES_HOURS / 24, // Convert hours to days
-        secure: window.location.protocol === 'https:', // Only secure in production
-        sameSite: 'lax' // Allow sharing with sub-applications on same site
+        expires: CookieHelper.EXPIRES_HOURS / 24,
+        secure: true, // Always true for cross-subdomain cookies
+        sameSite: 'none', // Required for cross-subdomain sharing
+        domain: '.luminatecs.com' // Share cookie across all luminatecs subdomains
       });
+
 
       Logger.info('CookieHelper: User session stored in cookie for sub-applications', {
         userId: user.id,
