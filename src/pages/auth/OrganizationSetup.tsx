@@ -8,8 +8,6 @@ import Logger from '../../utils/logUtils';
 import {
   AuthContainer,
   AuthCard,
-  AuthTitle,
-  AuthSubtitle,
   FormGroup,
   Label,
   Input as BaseInput,
@@ -140,38 +138,6 @@ const MainContent = styled(AuthCard)`
   @media (max-width: 1024px) {
     margin-left: 0;
   }
-`;
-
-const Header = styled.div`
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 2.5rem 2rem;
-  position: relative;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 6px;
-    background: linear-gradient(90deg, #4299e1 0%, #2c5282 100%);
-  }
-`;
-
-const HeaderContent = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-`;
-
-const Title = styled(AuthTitle)`
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-`;
-
-const Subtitle = styled(AuthSubtitle)`
-  margin: 0;
-  font-size: 1.1rem;
 `;
 
 const ProgressContainer = styled.div`

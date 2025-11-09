@@ -52,31 +52,6 @@ const LogoContainer = styled.div`
   gap: 0.75rem;
 `
 
-const LogoIcon = styled.div`
-  padding: 0.5rem;
-  /* background-color: #4f46e5; */
-  border-radius: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`
-
-const LogoText = styled.div`
-  h2 {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0;
-  }
-  
-  p {
-    font-size: 0.875rem;
-    color: #64748b;
-    margin: 0;
-  }
-`
-
 const UpdatedInfo = styled.div`
   display: flex;
   align-items: center;
@@ -222,10 +197,6 @@ const TabButton = styled.button<{ active: boolean }>`
 
 const TabContent = styled.div<{ active: boolean }>`
   display: ${(props) => (props.active ? "block" : "none")};
-`
-
-const LogoImg = styled.img`
-  width: 5rem;  
 `
 
 const TabHeader = styled.div`
@@ -449,23 +420,6 @@ const FooterDescription = styled.p`
   margin-bottom: 1rem;
 `
 
-const FooterLinks = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  font-size: 0.875rem;
-  
-  a {
-    color: #94a3b8;
-    text-decoration: none;
-    transition: color 0.2s ease;
-    
-    &:hover {
-      color: white;
-    }
-  }
-`
-
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -493,18 +447,6 @@ const PageButton = styled.button<{ active?: boolean; disabled?: boolean }>`
     background: ${props => props.disabled ? (props.active ? '#1967d2' : 'white') : (props.active ? '#1558b0' : '#f1f3f4')};
     transform: ${props => props.disabled ? 'none' : 'translateY(-2px)'};
   }
-`
-
-const PageInfo = styled.div`
-  color: #64748b;
-  font-size: 0.875rem;
-  padding: 0 1rem;
-  background: #f8fafc;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  border-radius: 0.5rem;
-  border: 1px solid #e2e8f0;
 `
 
 export default function Resources() {

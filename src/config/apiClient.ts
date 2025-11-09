@@ -1,5 +1,5 @@
 import API_CONFIG from './apiConfig';
-import { isTokenExpired, getToken, getRefreshToken } from '../utils/tokenUtils';
+import { isTokenExpired, getToken } from '../utils/tokenUtils';
 import Logger from '../utils/logUtils';
 
 // Types for maintaining axios-like interface
@@ -138,7 +138,7 @@ class ApiClient {
       // Create AbortController for timeout
       const controller = new AbortController();
       timeoutId = setTimeout(() => {
-        Logger.warn('ApiClient: Request timeout after ${timeout}ms for ${urlWithParams}');
+        Logger.warn(`ApiClient: Request timeout after ${timeout}ms for ${urlWithParams}`);
         controller.abort();
       }, timeout);
 
@@ -154,7 +154,7 @@ class ApiClient {
         }
       }
 
-      Logger.info('ApiClient: Starting fetch request to: ${urlWithParams}');
+      Logger.info(`ApiClient: Starting fetch request to: ${urlWithParams}`);
 
       // Make the fetch request with additional fetch options
       const response = await fetch(urlWithParams, {
