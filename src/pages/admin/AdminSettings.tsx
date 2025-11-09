@@ -1,128 +1,130 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Search, Plus, Edit, Trash2, Eye, Save, X } from 'lucide-react';
-import { ResourcesService, IResource } from '../../services/ResourcesService';
+import { useAuth } from '../../contexts/auth';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import AddResourcesPage from './AddResourcesPage';
+import ManageAllUsersPage from './ManageAllUsersPage';
+import ManageUsersPage from './ManageUsersPage';
 
-// Styled Components (matching organization dashboard)
+/**
+ * Main Dashboard Container
+ */
 const DashboardContainer = styled.div`
   display: flex;
   height: 100vh;
+  background: white;
   overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 `;
 
+/**
+ * Side Panel (Navigation)
+ */
 const SidePanel = styled.div<{ isExpanded: boolean }>`
-  background: linear-gradient(180deg, #1a365d 0%, #2c5282 50%, #2d3748 100%);
-  width: ${props => props.isExpanded ? '280px' : '80px'};
-  transition: width 0.3s ease;
+  width: ${props => props.isExpanded ? '240px' : '80px'};
+  background: linear-gradient(180deg, #1a2332 0%, #0d1419 100%);
+  color: white;
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 1.5rem;
-  color: white;
-  position: relative;
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  top: 0;
+
+  @media (max-width: 768px) {
+    width: ${props => props.isExpanded ? '240px' : '0'};
+  }
 `;
 
+/**
+ * Side Panel Header
+ */
 const SidePanelHeader = styled.div<{ isExpanded: boolean }>`
+  padding: 1.5rem 1rem;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 1rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
-const HamburgerButton = styled.button`
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  transition: background-color 0.2s ease;
-  width: 40px;
-  height: 40px;
+/**
+ * Sidebar Search Container
+ */
+const SidebarSearchContainer = styled.div<{ isExpanded: boolean }>`
   display: flex;
   align-items: center;
-  justify-content: center;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-`;
-
-const OrgTitle = styled.h2<{ isExpanded: boolean }>`
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
+  gap: 0.5rem;
+  width: 100%;
   opacity: ${props => props.isExpanded ? 1 : 0};
   transition: opacity 0.3s ease;
-  white-space: nowrap;
-  overflow: hidden;
 `;
 
-const NavigationList = styled.div`
+/**
+ * Sidebar Search Bar
+ */
+const SidebarSearchBar = styled.div`
   flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-`;
-
-const NavigationItem = styled.div<{ isActive: boolean; isExpanded: boolean }>`
-  display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: ${props => props.isActive ? 'rgba(255, 255, 255, 0.15)' : 'transparent'};
-  border: ${props => props.isActive ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid transparent'};
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  .icon {
-    font-size: 1.5rem;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .text {
-    font-weight: 500;
-    opacity: ${props => props.isExpanded ? 1 : 0};
-    transition: opacity 0.3s ease;
-    white-space: nowrap;
-    overflow: hidden;
-  }
-`;
-
-const BackButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  gap: 0.5rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 500;
-  margin-top: 1rem;
+  transition: all 0.15s ease;
 
   &:hover {
     background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  &:focus-within {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 0.875rem;
+    font-family: inherit;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: rgba(255, 255, 255, 0.7);
+    flex-shrink: 0;
+  }
+`;
+
+/**
+ * Grid Icon Button (Modules)
+ */
+const GridIconButton = styled.button`
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: rgba(255, 255, 255, 0.9);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
 
   svg {
@@ -131,677 +133,514 @@ const BackButton = styled.button`
   }
 `;
 
-const ContentArea = styled.div`
-  flex: 1;
-  overflow: auto;
-  background: #f8fafc;
-  padding: 2rem;
+/**
+ * Chevron Toggle Button
+ */
+const ChevronButton = styled.button<{ isExpanded: boolean }>`
+  position: absolute;
+  right: -12px;
+  top: 24px;
+  width: 24px;
+  height: 24px;
+  background: #1a2332;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  z-index: 101;
+  color: white;
+
+  &:hover {
+    background: #0d1419;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    transform: ${props => props.isExpanded ? 'rotate(0deg)' : 'rotate(180deg)'};
+    transition: transform 0.3s ease;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
-const ContentCard = styled.div`
+/**
+ * Modules Popup
+ */
+const ModulesPopup = styled.div<{ isOpen: boolean }>`
+  position: absolute;
+  top: 60px;
+  left: ${props => props.isOpen ? '0' : '-300px'};
+  width: 280px;
   background: white;
-  border-radius: 0;
-  box-shadow: none;
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
-  height: calc(100vh - 4rem);
+  border-radius: 8px;
+  padding: 0.5rem;
+  opacity: ${props => props.isOpen ? 1 : 0};
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  pointer-events: ${props => props.isOpen ? 'auto' : 'none'};
+  border: 1px solid #dadce0;
+`;
+
+const ModuleItem = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-align: left;
+  color: #202124;
+
+  &:hover {
+    background: #f1f3f4;
+  }
+
+  .icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e8f0fe;
+    border-radius: 6px;
+    font-size: 16px;
+  }
+
+  .label {
+    font-size: 14px;
+    font-weight: 500;
+  }
+`;
+
+/**
+ * Navigation List
+ */
+const NavigationList = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1rem 0;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+  }
+`;
+
+/**
+ * Navigation Item
+ */
+const NavigationItem = styled.button<{ isActive: boolean; isExpanded: boolean }>`
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: ${props => props.isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)'};
+  padding: ${props => props.isExpanded ? '0.875rem 1.5rem' : '0.875rem 0'};
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: ${props => props.isExpanded ? 'flex-start' : 'center'};
+  gap: 0.875rem;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  position: relative;
+  margin: 0.25rem 0;
+
+  ${props => props.isActive && props.isExpanded && `
+    &::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 40px;
+      background: white;
+      border-radius: 4px 0 0 4px;
+    }
+  `}
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #FFFFFF;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .text {
+    opacity: ${props => props.isExpanded ? 1 : 0};
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+  }
+`;
+
+/**
+ * Content Area
+ */
+const ContentArea = styled.div<{ sidebarExpanded: boolean }>`
+  flex: 1;
+  margin-left: ${props => props.sidebarExpanded ? '240px' : '80px'};
+  transition: margin-left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  background: white;
+  height: 100vh;
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+  }
+`;
+
+/**
+ * Top Header Bar
+ */
+const TopHeader = styled.div`
+  background: white;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e8eaed;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+  }
+`;
+
+/**
+ * Page Title
+ */
+const PageTitle = styled.h1`
+  font-size: 20px;
+  font-weight: 500;
+  color: #202124;
+  margin: 0;
+  letter-spacing: 0;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+  }
+`;
+
+/**
+ * Header Actions
+ */
+const HeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  @media (max-width: 768px) {
+    gap: 4px;
+  }
+`;
+
+/**
+ * Search Bar
+ */
+const SearchBar = styled.div`
+  display: flex;
+  align-items: center;
+  background: #f1f3f4;
+  border-radius: 8px;
+  padding: 8px 16px;
+  gap: 8px;
+  width: 240px;
+  transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: #e8eaed;
+  }
+
+  &:focus-within {
+    background: white;
+  }
+
+  input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    color: #202124;
+    width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+
+    &::placeholder {
+      color: #5f6368;
+    }
+  }
+
+  svg {
+    color: #5f6368;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+/**
+ * Icon Button
+ */
+const IconButton = styled.button`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #5f6368;
+  position: relative;
+  transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: #f1f3f4;
+  }
+
+  &:active {
+    background: #e8eaed;
+  }
+`;
+
+/**
+ * User Profile
+ */
+const UserProfile = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 24px;
+  transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+
+  &:hover {
+    background: #f1f3f4;
+  }
+
+  @media (max-width: 768px) {
+    gap: 0;
+    padding: 0;
+  }
+`;
+
+/**
+ * Dropdown Menu
+ */
+const DropdownMenu = styled.div<{ isOpen: boolean }>`
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 240px;
+  background: white;
+  border-radius: 8px;
+  padding: 8px 0;
+  opacity: ${props => props.isOpen ? 1 : 0};
+  visibility: ${props => props.isOpen ? 'visible' : 'hidden'};
+  transform: ${props => props.isOpen ? 'translateY(0)' : 'translateY(-8px)'};
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  border: 1px solid #dadce0;
+`;
+
+/**
+ * Dropdown Item
+ */
+const DropdownItem = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: #202124;
+  font-size: 14px;
+  transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: #f1f3f4;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    color: #5f6368;
+    flex-shrink: 0;
+  }
+
+  &.danger {
+    color: #d93025;
+
+    svg {
+      color: #d93025;
+    }
+
+    &:hover {
+      background: #fce8e6;
+    }
+  }
+`;
+
+/**
+ * Dropdown Divider
+ */
+const DropdownDivider = styled.div`
+  height: 1px;
+  background: #e8eaed;
+  margin: 8px 0;
+`;
+
+/**
+ * User Avatar
+ */
+const UserAvatar = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  font-size: 14px;
+`;
+
+/**
+ * User Info
+ */
+const UserInfo = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
-const ScrollableContent = styled.div`
-  flex: 1;
-  overflow: auto;
+/**
+ * User Name
+ */
+const UserName = styled.div`
+  font-size: 14px;
+  font-weight: 500;
+  color: #202124;
+  line-height: 20px;
 `;
 
-const PageHeader = styled.div`
-  padding: 2rem;
-  border-bottom: 1px solid #e2e8f0;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+/**
+ * User Role
+ */
+const UserRole = styled.div`
+  font-size: 12px;
+  color: #5f6368;
+  line-height: 16px;
 `;
 
-const PageTitle = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 0.5rem 0;
-`;
+/**
+ * Logout Button
+ */
+const LogoutButton = styled.button<{ isExpanded: boolean }>`
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  padding: ${props => props.isExpanded ? '1rem 1.5rem' : '1rem 0'};
+  cursor: pointer;
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: ${props => props.isExpanded ? 'flex-start' : 'center'};
+  gap: 1rem;
+  font-weight: 500;
+  font-size: 0.95rem;
 
-const PageDescription = styled.p`
-  color: #64748b;
-  margin: 0;
-  font-size: 1.1rem;
-`;
-
-// Create Resources Component
-const CreateResources: React.FC = () => {
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    full_description: '',
-    category: '',
-    type: '',
-    resource_type: 'students' as 'students' | 'parents' | 'counselors',
-    link: '',
-    features: [''],
-    difficulty: 'Beginner' as 'Beginner' | 'Intermediate' | 'Advanced',
-    duration: '',
-    rating: 5,
-    featured: false,
-    free: true
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      // Process features array
-      const features = formData.features.filter(f => f.trim() !== '');
-      
-      const resourceData = {
-        ...formData,
-        features
-      };
-
-      await ResourcesService.createResource(resourceData);
-      alert('Resource created successfully!');
-      
-      // Reset form
-      setFormData({
-        title: '',
-        description: '',
-        full_description: '',
-        category: '',
-        type: '',
-        resource_type: 'students',
-        link: '',
-        features: [''],
-        difficulty: 'Beginner',
-        duration: '',
-        rating: 5,
-        featured: false,
-        free: true
-      });
-    } catch (error: any) {
-      alert('Error creating resource: ' + error.message);
-    }
-  };
-
-  const addFeature = () => {
-    setFormData(prev => ({
-      ...prev,
-      features: [...prev.features, '']
-    }));
-  };
-
-  const updateFeature = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      features: prev.features.map((f, i) => i === index ? value : f)
-    }));
-  };
-
-  const removeFeature = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      features: prev.features.filter((_, i) => i !== index)
-    }));
-  };
-
-  return (
-    <div style={{ padding: '3rem' }}>
-      <form onSubmit={handleSubmit} style={{ maxWidth: '900px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2.5rem' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600', color: '#374151' }}>Title</label>
-            <input
-              type="text"
-              required
-              value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              style={{ 
-                width: '100%', 
-                padding: '0.875rem', 
-                border: '1px solid #d1d5db', 
-                borderRadius: '0.375rem',
-                fontSize: '1rem',
-                backgroundColor: '#ffffff'
-              }}
-            />
-          </div>
-          
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600', color: '#374151' }}>Category</label>
-            <input
-              type="text"
-              required
-              value={formData.category}
-              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-              style={{ 
-                width: '100%', 
-                padding: '0.875rem', 
-                border: '1px solid #d1d5db', 
-                borderRadius: '0.375rem',
-                fontSize: '1rem',
-                backgroundColor: '#ffffff'
-              }}
-            />
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2.5rem' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600', color: '#374151' }}>Resource Type</label>
-            <select
-              value={formData.resource_type}
-              onChange={(e) => setFormData(prev => ({ ...prev, resource_type: e.target.value as any }))}
-              style={{ 
-                width: '100%', 
-                padding: '0.875rem', 
-                border: '1px solid #d1d5db', 
-                borderRadius: '0.375rem',
-                fontSize: '1rem',
-                backgroundColor: '#ffffff'
-              }}
-            >
-              <option value="students">Students</option>
-              <option value="parents">Parents</option>
-              <option value="counselors">Counselors</option>
-            </select>
-          </div>
-          
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600', color: '#374151' }}>Type</label>
-            <input
-              type="text"
-              required
-              value={formData.type}
-              onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
-              style={{ 
-                width: '100%', 
-                padding: '0.875rem', 
-                border: '1px solid #d1d5db', 
-                borderRadius: '0.375rem',
-                fontSize: '1rem',
-                backgroundColor: '#ffffff'
-              }}
-            />
-          </div>
-        </div>
-
-        <div style={{ marginBottom: '2.5rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600', color: '#374151' }}>Description</label>
-          <textarea
-            required
-            rows={3}
-            value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            style={{ 
-              width: '100%', 
-              padding: '0.875rem', 
-              border: '1px solid #d1d5db', 
-              borderRadius: '0.375rem',
-              fontSize: '1rem',
-              backgroundColor: '#ffffff',
-              resize: 'vertical'
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: '2.5rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600', color: '#374151' }}>Full Description</label>
-          <textarea
-            required
-            rows={5}
-            value={formData.full_description}
-            onChange={(e) => setFormData(prev => ({ ...prev, full_description: e.target.value }))}
-            style={{ 
-              width: '100%', 
-              padding: '0.875rem', 
-              border: '1px solid #d1d5db', 
-              borderRadius: '0.375rem',
-              fontSize: '1rem',
-              backgroundColor: '#ffffff',
-              resize: 'vertical'
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: '2.5rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600', color: '#374151' }}>Link (Optional)</label>
-          <input
-            type="url"
-            value={formData.link}
-            onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
-            style={{ 
-              width: '100%', 
-              padding: '0.875rem', 
-              border: '1px solid #d1d5db', 
-              borderRadius: '0.375rem',
-              fontSize: '1rem',
-              backgroundColor: '#ffffff'
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: '2.5rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600', color: '#374151' }}>Features</label>
-          {formData.features.map((feature, index) => (
-            <div key={index} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
-              <input
-                type="text"
-                value={feature}
-                onChange={(e) => updateFeature(index, e.target.value)}
-                style={{ 
-                  flex: 1, 
-                  padding: '0.875rem', 
-                  border: '1px solid #d1d5db', 
-                  borderRadius: '0.375rem',
-                  fontSize: '1rem',
-                  backgroundColor: '#ffffff'
-                }}
-                placeholder="Enter a feature"
-              />
-              {formData.features.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeFeature(index)}
-                  style={{ 
-                    padding: '0.875rem', 
-                    background: '#ef4444', 
-                    color: 'white', 
-                    border: 'none', 
-                    borderRadius: '0.375rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addFeature}
-            style={{ 
-              padding: '0.75rem 1.25rem', 
-              background: '#10b981', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '0.375rem', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.5rem',
-              cursor: 'pointer',
-              fontSize: '0.9rem'
-            }}
-          >
-            <Plus size={16} />
-            Add Feature
-          </button>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '2rem', marginBottom: '2.5rem' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600', color: '#374151' }}>Difficulty</label>
-            <select
-              value={formData.difficulty}
-              onChange={(e) => setFormData(prev => ({ ...prev, difficulty: e.target.value as any }))}
-              style={{ 
-                width: '100%', 
-                padding: '0.875rem', 
-                border: '1px solid #d1d5db', 
-                borderRadius: '0.375rem',
-                fontSize: '1rem',
-                backgroundColor: '#ffffff'
-              }}
-            >
-              <option value="Beginner">Beginner</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
-            </select>
-          </div>
-          
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600', color: '#374151' }}>Duration</label>
-            <input
-              type="text"
-              value={formData.duration}
-              onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
-              style={{ 
-                width: '100%', 
-                padding: '0.875rem', 
-                border: '1px solid #d1d5db', 
-                borderRadius: '0.375rem',
-                fontSize: '1rem',
-                backgroundColor: '#ffffff'
-              }}
-              placeholder="e.g., 30 minutes"
-            />
-          </div>
-          
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600', color: '#374151' }}>Rating</label>
-            <input
-              type="number"
-              min="1"
-              max="5"
-              step="0.1"
-              value={formData.rating}
-              onChange={(e) => setFormData(prev => ({ ...prev, rating: parseFloat(e.target.value) }))}
-              style={{ 
-                width: '100%', 
-                padding: '0.875rem', 
-                border: '1px solid #d1d5db', 
-                borderRadius: '0.375rem',
-                fontSize: '1rem',
-                backgroundColor: '#ffffff'
-              }}
-            />
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: '2.5rem', marginBottom: '3rem' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={formData.featured}
-              onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
-              style={{ width: '1.125rem', height: '1.125rem' }}
-            />
-            <span style={{ fontSize: '1rem', color: '#374151' }}>Featured Resource</span>
-          </label>
-          
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={formData.free}
-              onChange={(e) => setFormData(prev => ({ ...prev, free: e.target.checked }))}
-              style={{ width: '1.125rem', height: '1.125rem' }}
-            />
-            <span style={{ fontSize: '1rem', color: '#374151' }}>Free Resource</span>
-          </label>
-        </div>
-
-        <button
-          type="submit"
-          style={{ 
-            padding: '1rem 2rem', 
-            background: '#2c5282', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '0.375rem', 
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            cursor: 'pointer',
-            fontSize: '1rem'
-          }}
-        >
-          <Save size={20} />
-          Create Resource
-        </button>
-      </form>
-    </div>
-  );
-};
-
-// Manage Resources Component  
-const ManageResources: React.FC = () => {
-  const [resources, setResources] = useState<IResource[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
-
-  useEffect(() => {
-    fetchResources();
-  }, []);
-
-  const fetchResources = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await ResourcesService.getAllResources();
-      setResources(response.data || []);
-    } catch (err: any) {
-      console.error('Error fetching resources:', err);
-      setError(err.message || 'Failed to fetch resources');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredResources = resources.filter(resource => {
-    const matchesSearch = searchTerm === '' || 
-      resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      resource.description.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesType = filterType === 'all' || resource.resource_type === filterType;
-
-    return matchesSearch && matchesType;
-  });
-
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this resource?')) {
-      try {
-        // TODO: Implement delete API call
-        console.log('Delete resource:', id);
-        // await ResourcesService.deleteResource(id);
-        // fetchResources();
-      } catch (err: any) {
-        console.error('Error deleting resource:', err);
-        setError('Failed to delete resource');
-      }
-    }
-  };
-
-  if (loading) {
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <p>Loading resources...</p>
-      </div>
-    );
+  &:hover {
+    background: rgba(255, 68, 68, 0.1);
+    color: #FF6B6B;
   }
 
-  if (error) {
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center', color: '#dc2626' }}>
-        <p>Error: {error}</p>
-      </div>
-    );
+  svg {
+    width: 20px;
+    height: 20px;
   }
 
-  return (
-    <div style={{ padding: '2rem' }}>
-      <div style={{ marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-        <div style={{ flex: 1, position: 'relative' }}>
-          <input
-            type="text"
-            placeholder="Search resources..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ 
-              width: '100%', 
-              padding: '0.75rem', 
-              border: '1px solid #d1d5db', 
-              borderRadius: '0.5rem',
-              paddingLeft: '2.5rem'
-            }}
-          />
-          <Search size={20} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#6b7280' }} />
-        </div>
-        
-        <select
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-          style={{ padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-        >
-          <option value="all">All Types</option>
-          <option value="students">Students</option>
-          <option value="parents">Parents</option>
-          <option value="counselors">Counselors</option>
-        </select>
-      </div>
+  .text {
+    opacity: ${props => props.isExpanded ? 1 : 0};
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+`;
 
-      <div 
-        style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', 
-          gap: '1.5rem'
-        }}
-      >
-        {filteredResources.map((resource) => (
-          <div
-            key={resource.id}
-            style={{
-              background: 'white',
-              border: '1px solid #e2e8f0',
-              borderRadius: '0.375rem',
-              overflow: 'hidden'
-            }}
-          >
-            <div style={{ padding: '1.5rem', borderBottom: '1px solid #f3f4f6' }}>
-              <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem', fontWeight: '600' }}>
-                {resource.title}
-              </h3>
-              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', fontSize: '0.875rem', color: '#6b7280' }}>
-                <span style={{
-                  background: resource.resource_type === 'students' ? '#dbeafe' : 
-                           resource.resource_type === 'parents' ? '#fef3c7' : '#d1fae5',
-                  color: resource.resource_type === 'students' ? '#1e40af' : 
-                         resource.resource_type === 'parents' ? '#b45309' : '#059669',
-                  padding: '0.25rem 0.75rem',
-                  borderRadius: '1rem',
-                  fontWeight: '500',
-                  textTransform: 'capitalize'
-                }}>
-                  {resource.resource_type}
-                </span>
-                <span>⭐ {Number(resource.rating).toFixed(1)}</span>
-                <span>{resource.category}</span>
-              </div>
-            </div>
-
-            <div style={{ padding: '1.5rem' }}>
-              <p style={{ color: '#6b7280', margin: '0 0 1rem 0', lineHeight: '1.5' }}>
-                {resource.description}
-              </p>
-
-              {resource.features && resource.features.length > 0 && (
-                <div style={{ marginBottom: '1rem' }}>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.875rem' }}>
-                    {resource.features.slice(0, 3).map((feature: string, index: number) => (
-                      <li key={index} style={{ color: '#6b7280', marginBottom: '0.25rem', paddingLeft: '1rem', position: 'relative' }}>
-                        <span style={{ position: 'absolute', left: 0, color: '#4f46e5' }}>•</span>
-                        {feature}
-                      </li>
-                    ))}
-                    {resource.features.length > 3 && (
-                      <li style={{ color: '#6b7280', marginBottom: '0.25rem', paddingLeft: '1rem', position: 'relative' }}>
-                        <span style={{ position: 'absolute', left: 0, color: '#4f46e5' }}>•</span>
-                        +{resource.features.length - 3} more features
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                {resource.link && (
-                  <button
-                    onClick={() => window.open(resource.link, '_blank')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.25rem',
-                      padding: '0.5rem 0.75rem',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '0.375rem',
-                      background: 'white',
-                      color: '#6b7280',
-                      cursor: 'pointer',
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    <Eye size={16} />
-                    View
-                  </button>
-                )}
-                <button
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.25rem',
-                    padding: '0.5rem 0.75rem',
-                    border: '1px solid #4f46e5',
-                    borderRadius: '0.375rem',
-                    background: '#4f46e5',
-                    color: 'white',
-                    cursor: 'pointer',
-                    fontSize: '0.875rem'
-                  }}
-                >
-                  <Edit size={16} />
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(resource.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.25rem',
-                    padding: '0.5rem 0.75rem',
-                    border: '1px solid #ef4444',
-                    borderRadius: '0.375rem',
-                    background: '#ef4444',
-                    color: 'white',
-                    cursor: 'pointer',
-                    fontSize: '0.875rem'
-                  }}
-                >
-                  <Trash2 size={16} />
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {filteredResources.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
-          <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>No resources found</h3>
-          <p style={{ marginBottom: '1.5rem' }}>There are no resources matching your current filters.</p>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Navigation items configuration
+/**
+ * Navigation items configuration
+ */
 interface NavigationItemConfig {
   id: string;
   label: string;
   icon: string;
-  component: React.ComponentType<any>;
-  description: string;
+  path: string;
+  superAdminOnly?: boolean; // Flag for SUPER_ADMIN only items
 }
 
 const navigationItems: NavigationItemConfig[] = [
   {
-    id: 'create-resources',
-    label: 'Create Resources',
+    id: 'add-resources',
+    label: 'Add Resources',
     icon: '➕',
-    component: CreateResources,
-    description: 'Create new educational resources for students, parents, and counselors'
+    path: '/admin/settings'
   },
   {
-    id: 'manage-resources',
-    label: 'Manage Resources',
-    icon: '📚',
-    component: ManageResources,
-    description: 'View, edit, and manage existing resources in the system'
+    id: 'manage-organizations',
+    label: 'Manage Organizations',
+    icon: '🏢',
+    path: '/admin/settings/manage-organizations'
+  },
+  {
+    id: 'manage-user-access',
+    label: 'Manage User Access',
+    icon: '🔐',
+    path: '/admin/settings/manage-users',
+    superAdminOnly: true // Only visible to SUPER_ADMIN
   }
 ];
 
@@ -809,48 +648,161 @@ const navigationItems: NavigationItemConfig[] = [
  * Admin Settings Component
  */
 const AdminSettings: React.FC = () => {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [activeItem, setActiveItem] = useState<string>('create-resources');
+  const location = useLocation();
+  const [isExpanded, setIsExpanded] = useState(window.innerWidth > 768);
+  const [isModulesOpen, setIsModulesOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
+  // Close sidebar on mobile when route changes
+  React.useEffect(() => {
+    if (window.innerWidth <= 768) {
+      setIsExpanded(false);
+    }
+  }, [location.pathname]);
+
+  // Handle responsive sidebar
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setIsExpanded(false);
+      } else {
+        setIsExpanded(true);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Close dropdowns when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      
+      if (userMenuOpen && !target.closest('[data-dropdown="user-menu"]')) {
+        setUserMenuOpen(false);
+      }
+      
+      if (isModulesOpen && !target.closest('[data-dropdown="modules"]')) {
+        setIsModulesOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [userMenuOpen, isModulesOpen]);
+
+  if (!user) {
+    return <div>Loading...</div>;
+  }
+
+  const getActiveItemId = () => {
+    const currentPath = location.pathname;
+    const activeNav = navigationItems.find(item => item.path === currentPath);
+    return activeNav?.id || 'add-resources';
+  };
+
+  const activeItem = getActiveItemId();
   const currentNavItem = navigationItems.find(item => item.id === activeItem);
-  const CurrentComponent = currentNavItem?.component;
 
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded);
   };
 
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    if (window.innerWidth <= 768) {
+      setIsExpanded(false);
+    }
+  };
+
   const handleBackToDashboard = () => {
-    navigate('/super-admin-dashboard');
+    // ACCESS_ADMIN doesn't have a dashboard, so redirect to ecosystem
+    if (user?.role === 'ACCESS_ADMIN') {
+      navigate('/ecosystem');
+    } else {
+      navigate('/super-admin-dashboard');
+    }
   };
 
   return (
     <DashboardContainer>
       <SidePanel isExpanded={isExpanded}> 
+        <ChevronButton isExpanded={isExpanded} onClick={toggleSidebar}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </ChevronButton>
+
         <SidePanelHeader isExpanded={isExpanded}>
-          <HamburgerButton onClick={toggleSidebar}>
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M4 6h16M4 12h16M4 18h16" 
+          <SidebarSearchContainer isExpanded={isExpanded}>
+            <SidebarSearchBar>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-            </svg>
-          </HamburgerButton>
-          
-          <OrgTitle isExpanded={isExpanded}>
-            Settings & Resources
-          </OrgTitle>
+            </SidebarSearchBar>
+            <img 
+              src="/luminate-logo.png" 
+              alt="Luminate Logo" 
+              style={{ 
+                width: '24px', 
+                height: '24px', 
+                marginLeft: '8px',
+                objectFit: 'contain'
+              }} 
+            />
+            <div style={{ position: 'relative' }} data-dropdown="modules">
+              <GridIconButton onClick={() => setIsModulesOpen(!isModulesOpen)}>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                  <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                  <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                  <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                </svg>
+              </GridIconButton>
+            </div>
+          </SidebarSearchContainer>
+
+          <ModulesPopup isOpen={isModulesOpen}>
+            <ModuleItem onClick={() => { navigate('/library'); setIsModulesOpen(false); }}>
+              <div className="icon">📚</div>
+              <div className="label">Library</div>
+            </ModuleItem>
+            <ModuleItem onClick={() => { navigate('/kaeval'); setIsModulesOpen(false); }}>
+              <div className="icon">🎯</div>
+              <div className="label">Kaeval</div>
+            </ModuleItem>
+            <ModuleItem onClick={() => { navigate('/resources'); setIsModulesOpen(false); }}>
+              <div className="icon">🔧</div>
+              <div className="label">Resources</div>
+            </ModuleItem>
+          </ModulesPopup>
         </SidePanelHeader>
 
         <NavigationList>
-          {navigationItems.map((item) => (
+          {navigationItems
+            .filter(item => !item.superAdminOnly || user?.role === 'SUPER_ADMIN')
+            .map((item) => (
             <NavigationItem
               key={item.id}
               isActive={activeItem === item.id}
               isExpanded={isExpanded}
-              onClick={() => setActiveItem(item.id)}
+              onClick={() => handleNavigation(item.path)}
             >
               <span className="icon">{item.icon}</span>
               <span className="text">{item.label}</span>
@@ -858,27 +810,81 @@ const AdminSettings: React.FC = () => {
           ))}
         </NavigationList>
 
-        <BackButton onClick={handleBackToDashboard}>
+        <LogoutButton isExpanded={isExpanded} onClick={handleBackToDashboard}>
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
               d="M10 19l-7-7m0 0l7-7m-7 7h18" 
             />
           </svg>
-          Back to Dashboard
-        </BackButton>
+          <span className="text">{user?.role === 'ACCESS_ADMIN' ? 'Back to Ecosystem' : 'Back to Dashboard'}</span>
+        </LogoutButton>
       </SidePanel>
 
-      <ContentArea>
-        <ContentCard>
-          <PageHeader>
-            <PageTitle>{currentNavItem?.label}</PageTitle>
-            <PageDescription>{currentNavItem?.description}</PageDescription>
-          </PageHeader>
+      <ContentArea sidebarExpanded={isExpanded}>
+        <TopHeader>
+          <PageTitle>{currentNavItem?.label || 'Admin Settings'}</PageTitle>
+          
+          <HeaderActions>
+            <SearchBar>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input type="text" placeholder="Search here..." />
+            </SearchBar>
+            
+            <IconButton onClick={toggleSidebar}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M4 6h16M4 12h16M4 18h16" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </IconButton>
+            
+            <UserProfile onClick={() => setUserMenuOpen(!userMenuOpen)} data-dropdown="user-menu">
+              <UserAvatar>
+                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+              </UserAvatar>
+              <UserInfo>
+                <UserName>{user?.name}</UserName>
+                <UserRole>{user?.role === 'ACCESS_ADMIN' ? 'Access Admin' : 'Super Admin'}</UserRole>
+              </UserInfo>
+              
+              <DropdownMenu isOpen={userMenuOpen}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid #e8eaed' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 500, color: '#202124' }}>{user?.name}</div>
+                  <div style={{ fontSize: '12px', color: '#5f6368', marginTop: '2px' }}>{user?.email}</div>
+                </div>
+                {user?.role === 'SUPER_ADMIN' && (
+                  <DropdownItem onClick={() => { handleBackToDashboard(); setUserMenuOpen(false); }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Dashboard
+                  </DropdownItem>
+                )}
+                <DropdownItem onClick={() => { navigate('/ecosystem'); setUserMenuOpen(false); }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Ecosystem Hub
+                </DropdownItem>
+                <DropdownDivider />
+                <DropdownItem className="danger" onClick={handleLogout}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Sign Out
+                </DropdownItem>
+              </DropdownMenu>
+            </UserProfile>
+          </HeaderActions>
+        </TopHeader>
 
-          <ScrollableContent>
-            {CurrentComponent && <CurrentComponent />}
-          </ScrollableContent>
-        </ContentCard>
+        {/* Routes for nested pages */}
+        <Routes>
+          <Route index element={<AddResourcesPage />} />
+          <Route path="manage-organizations" element={<ManageAllUsersPage />} />
+          <Route path="manage-users" element={<ManageUsersPage />} />
+        </Routes>
       </ContentArea>
     </DashboardContainer>
   );

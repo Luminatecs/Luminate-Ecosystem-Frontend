@@ -5,7 +5,6 @@ import { useAuth } from '../../contexts/auth';
 import { RegisterOrganizationDto } from '../../models';
 import Logger from '../../utils/logUtils';
 import {
-  AuthContainer,
   AuthTitle,
   AuthSubtitle,
   FormGroup,
@@ -19,36 +18,16 @@ import {
  */
 const RegisterContainer = styled.div`
   display: flex;
-  background: rgba(255, 255, 255, 0.95);
-  /* border-radius: 20px; */
-  box-shadow: 
-    0 10px 40px rgba(0, 0, 0, 0.08),
-    0 4px 12px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: white;
   overflow: hidden;
-    /* overflow-y: auto; */
-  -ms-overflow-style: none;
-  scrollbar-width: none; 
-  
-  &::-webkit-scrollbar {
-    display: none; 
-  }
-  /* max-width: 1000px; */
-  /* width: 90%;
-  min-height: 650px; */
+  width: 100%;
   height: 100vh;
   position: relative;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, rgba(66, 153, 225, 0.4) 50%, transparent 100%);
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
   }
 `;
 
@@ -56,46 +35,56 @@ const RegisterContainer = styled.div`
  * Form Section
  */
 const FormSection = styled.div`
-  flex: 0.6;
-  padding: 3rem;
+  flex: 1;
+  padding: 48px;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  
+  /* Hide scrollbar */
+  scrollbar-width: none;
   -ms-overflow-style: none;
-  scrollbar-width: none; 
   
   &::-webkit-scrollbar {
-    display: none; 
+    display: none;
   }
-  /* max-height: 650px; */
-  height: 100%;
+
+  @media (max-width: 768px) {
+    padding: 32px 24px;
+    order: 2;
+  }
+
+  @media (max-width: 480px) {
+    padding: 24px 16px;
+  }
 `;
 
 /**
  * Welcome Section
  */
 const WelcomeSection = styled.div`
-  flex: 1;
-  background: linear-gradient(135deg, #2c5282 0%, #4299e1 100%);
+  flex: 0.8;
+  background: linear-gradient(135deg, #1967d2 0%, #1557b0 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 3rem;
+  padding: 48px;
   color: white;
   text-align: center;
   position: relative;
   overflow: hidden;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    pointer-events: none;
+  @media (max-width: 768px) {
+    flex: none;
+    min-height: 250px;
+    padding: 32px 24px;
+    order: 1;
+  }
+
+  @media (max-width: 480px) {
+    min-height: 200px;
+    padding: 24px 16px;
   }
 `;
 
@@ -105,8 +94,12 @@ const WelcomeSection = styled.div`
 const FormRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 16px;
+  margin-bottom: 16px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 /**
@@ -121,46 +114,60 @@ const Form = styled.form`
 const CheckboxGroup = styled.div`
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 12px;
+  margin-bottom: 16px;
 `;
 
 const Checkbox = styled.input`
-  margin-top: 0.125rem;
+  margin-top: 2px;
   flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
 `;
 
 const CheckboxLabel = styled.label`
-  color: #4a5568;
-  font-size: 0.75rem;
-  line-height: 1.4;
+  color: #5f6368;
+  font-size: 14px;
+  line-height: 20px;
   margin: 0;
   cursor: pointer;
+
+  a {
+    color: #1967d2;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 `;
 
 const SubmitButton = styled.button`
   width: 100%;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: #1967d2;
   color: white;
-  padding: 0.75rem;
+  padding: 10px 24px;
   border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 1rem;
+  transition: all 0.15s ease;
+  margin-bottom: 16px;
 
   &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+    background: #1557b0;
+    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
   }
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
   }
 `;
 
@@ -169,13 +176,15 @@ const SubmitButton = styled.button`
  */
 const BackLink = styled.div`
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e8eaed;
   
   a {
-    color: #6366f1;
+    color: #1967d2;
     text-decoration: none;
-    font-weight: 600;
-    font-size: 0.875rem;
+    font-weight: 500;
+    font-size: 14px;
     
     &:hover {
       text-decoration: underline;
@@ -184,15 +193,16 @@ const BackLink = styled.div`
 `;
 
 const WelcomeTitle = styled.h2`
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
+  font-size: 32px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  letter-spacing: 0;
 `;
 
 const WelcomeText = styled.p`
-  font-size: 1rem;
+  font-size: 14px;
+  line-height: 20px;
   opacity: 0.9;
-  line-height: 1.5;
 `;
 
 interface FormData {

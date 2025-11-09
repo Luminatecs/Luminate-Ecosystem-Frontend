@@ -11,6 +11,7 @@ import IndividualRegistrationPage from './pages/auth/IndividualRegistrationPage'
 import OrganizationRegistrationPage from './pages/auth/OrganizationRegistrationPage';
 import OrganizationSetup from './pages/auth/OrganizationSetup';
 import OrgWardRegistrationPage from './pages/auth/OrgWardRegistrationPage';
+import TempLogin from './pages/auth/TempLogin';
 import { ForgotPasswordPage, ResetPasswordPage } from './pages/auth';
 
 // Enrollment Pages
@@ -30,6 +31,7 @@ import Library from './pages/modules/library/index';
 import SearchResults from './pages/modules/library/SearchResults';
 import Kaeval from './pages/modules/kaeval/index';
 import Resources from './pages/modules/resources/index';
+import ResourceDetail from './pages/modules/resources/resourcesDetails';
 
 /**
  * Main Application Component
@@ -53,6 +55,9 @@ function App() {
             <Route path="/register/organization" element={<OrganizationRegistrationPage />} />
             <Route path="/register/student" element={<OrgWardRegistrationPage />} />
             
+            {/* Temporary Login for Wards - Public Route with optional temp code in URL */}
+            <Route path="/temp-login/:tempCode?" element={<TempLogin />} />
+            
             {/* Password Reset Routes - Public */}
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -69,9 +74,9 @@ function App() {
               } 
             />
             
-            {/* Organization Dashboard - Only for ORG_ADMIN */}
+            {/* Organization Dashboard - Only for ORG_ADMIN - with nested routes */}
             <Route 
-              path="/organization-dashboard" 
+              path="/organization-dashboard/*" 
               element={
                 <ProtectedRoute requiredRoles={[UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN]}>
                   <OrganizationDashboard />
@@ -137,6 +142,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[UserRole.INDIVIDUAL, UserRole.ORG_WARD, UserRole.SUPER_ADMIN]}>
                   <Resources />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/resources/:id" 
+              element={
+                <ProtectedRoute allowedRoles={[UserRole.INDIVIDUAL, UserRole.ORG_WARD, UserRole.SUPER_ADMIN]}>
+                  <ResourceDetail />
                 </ProtectedRoute>
               } 
             />
@@ -219,10 +232,12 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            
+            {/* Admin Settings - Accessible by SUPER_ADMIN and ACCESS_ADMIN */}
             <Route 
-              path="/admin/settings" 
+              path="/admin/settings/*" 
               element={
-                <ProtectedRoute requiredRoles={[UserRole.SUPER_ADMIN]}>
+                <ProtectedRoute requiredRoles={[UserRole.SUPER_ADMIN, UserRole.ACCESS_ADMIN]}>
                   <AdminSettings />
                 </ProtectedRoute>
               } 
@@ -240,14 +255,6 @@ function App() {
               element={
                 <ProtectedRoute requiredRoles={[UserRole.SUPER_ADMIN]}>
                   <div>Manage Users Page - Coming Soon</div>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/settings" 
-              element={
-                <ProtectedRoute requiredRoles={[UserRole.SUPER_ADMIN]}>
-                  <div>System Settings Page - Coming Soon</div>
                 </ProtectedRoute>
               } 
             />

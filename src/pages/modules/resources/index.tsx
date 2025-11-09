@@ -1,5 +1,4 @@
-import React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import styled from "styled-components"
 import { useNavigate } from "react-router-dom"
 import {
@@ -20,50 +19,21 @@ import {
   UserCheck,
   ChevronLeft,
   ChevronRight,
-  LucideIcon,
   ArrowLeft,
 } from "lucide-react"
-import { ResourcesService, IResource } from "../../../services/ResourcesService"
-import { useAuth } from "../../../contexts/auth"
-
-// Types
-interface Resource {
-  id: string;
-  title: string;
-  description: string;
-  fullDescription: string;
-  category: string;
-  type: string;
-  rating: number;
-  link: string;
-  icon?: LucideIcon;
-  featured?: boolean;
-  image: string;
-  features: string[];
-  duration: string;
-  difficulty: string;
-  tags?: string[];
-  free?: boolean;
-}
-
-type TabType = "students" | "parents" | "counselors";
-
-interface ResourceCardProps {
-  resource: Resource;
-}
 // import luminateLogo from '../img/luminate-logo.png';
 
 // Styled Components
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(to bottom right, #f0f7ff, #e6eeff);
-  font-family: 'Nunito', 'Segoe UI', sans-serif;
+  background: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 `
 
 const Header = styled.header`
   background-color: white;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #dadce0;
+  box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
 `
 
 const HeaderContent = styled.div`
@@ -115,9 +85,36 @@ const UpdatedInfo = styled.div`
   color: #64748b;
 `
 
+const BackButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #4338ca;
+    transform: translateX(-2px);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`
+
 const HeroSection = styled.section`
-  padding: 1.5rem 1rem;
+  padding: 48px 24px;
   text-align: center;
+  background: white;
+  border-bottom: 1px solid #dadce0;
 `
 
 const HeroContent = styled.div`
@@ -125,16 +122,18 @@ const HeroContent = styled.div`
   margin: 0 auto;
   
   h2 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 0.5rem;
+    font-size: 32px;
+    font-weight: 400;
+    color: #202124;
+    margin-bottom: 8px;
+    letter-spacing: 0;
   }
   
   p {
-    font-size: 1.25rem;
-    color: #64748b;
-    margin-bottom: 4rem;
+    font-size: 16px;
+    color: #5f6368;
+    margin-bottom: 32px;
+    font-weight: 400;
   }
 `
 
@@ -146,60 +145,36 @@ const SearchContainer = styled.div`
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border-radius: 50px;
-  border: 1px solid #e2e8f0;
-  font-size: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 12px 16px 12px 48px;
+  border-radius: 24px;
+  border: 1px solid #dadce0;
+  font-size: 14px;
+  background: #f1f3f4;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  
+  &:hover {
+    background: #e8eaed;
+  }
   
   &:focus {
     outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    background: white;
+    border-color: #1967d2;
+    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+  }
+
+  &::placeholder {
+    color: #5f6368;
   }
 `
 
 const SearchIconWrapper = styled.div`
   position: absolute;
-  left: 0.75rem;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
-`
-
-const BackToDashboardButton = styled.button`
-  position: fixed;
-  top: 1.5rem;
-  left: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  background: linear-gradient(135deg, #4299e1 0%, #2c5282 100%);
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1000;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(66, 153, 225, 0.4);
-    background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
+  color: #5f6368;
 `
 
 const MainContent = styled.main`
@@ -216,30 +191,32 @@ const TabsContainer = styled.div`
 const TabsList = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-  background-color: #f1f5f9;
-  padding: 0.25rem;
-  border-radius: 0.5rem;
+  gap: 8px;
+  margin-bottom: 32px;
+  background-color: white;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid #dadce0;
 `
 
 const TabButton = styled.button<{ active: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
+  gap: 8px;
+  padding: 12px 16px;
   border: none;
-  background-color: ${(props) => (props.active ? "white" : "transparent")};
-  color: ${(props) => (props.active ? "#4f46e5" : "#64748b")};
-  font-weight: ${(props) => (props.active ? "600" : "400")};
-  border-radius: 0.375rem;
+  background-color: ${(props) => (props.active ? "#1967d2" : "transparent")};
+  color: ${(props) => (props.active ? "white" : "#5f6368")};
+  font-weight: ${(props) => (props.active ? "500" : "400")};
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: ${(props) => (props.active ? "0 2px 4px rgba(0, 0, 0, 0.05)" : "none")};
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   
   &:hover {
-    background-color: ${(props) => (props.active ? "white" : "#e2e8f0")};
+    background-color: ${(props) => (props.active ? "#1558b0" : "#f1f3f4")};
   }
 `
 
@@ -253,17 +230,19 @@ const LogoImg = styled.img`
 
 const TabHeader = styled.div`
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 32px;
   
   h3 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 0.5rem;
+    font-size: 24px;
+    font-weight: 400;
+    color: #202124;
+    margin-bottom: 8px;
+    letter-spacing: 0;
   }
   
   p {
-    color: #64748b;
+    color: #5f6368;
+    font-size: 14px;
   }
 `
 
@@ -281,19 +260,18 @@ const ResourceGrid = styled.div`
   }
 `
 
-const ResourceCardWrapper = styled.div<{ featured?: boolean }>`
+const ResourceCardWrapper = styled.div`
   background-color: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  border: 1px solid #dadce0;
   height: 100%;
-  transition: all 0.3s ease;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-  border: ${(props) => (props.featured ? "2px solid #bfdbfe" : "1px solid #e2e8f0")};
-  background-color: ${(props) => (props.featured ? "#f0f7ff" : "white")};
+  overflow: hidden;
   
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+    transform: translateY(-2px);
   }
 `
 
@@ -315,22 +293,22 @@ const IconContainer = styled.div`
 `
 
 const IconBadge = styled.div`
-  padding: 0.5rem;
-  background-color: #dbeafe;
-  border-radius: 0.5rem;
+  padding: 8px;
+  background-color: #e8f0fe;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #3b82f6;
+  color: #1967d2;
 `
 
 const FeaturedBadge = styled.span`
-  background-color: #dbeafe;
-  color: #1d4ed8;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
+  background-color: #e8f0fe;
+  color: #1967d2;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 12px;
 `
 
 const RatingContainer = styled.div`
@@ -342,17 +320,18 @@ const RatingContainer = styled.div`
 `
 
 const CardTitle = styled.h3`
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 0.25rem;
+  font-size: 16px;
+  font-weight: 500;
+  color: #202124;
+  margin-bottom: 4px;
   line-height: 1.3;
 `
 
 const CardDescription = styled.p`
-  font-size: 0.875rem;
-  color: #64748b;
-  margin-bottom: 0.5rem;
+  font-size: 14px;
+  color: #5f6368;
+  margin-bottom: 8px;
+  line-height: 1.5;
 `
 
 const CardContent = styled.div`
@@ -371,28 +350,29 @@ const BadgeContainer = styled.div`
 `
 
 const Badge = styled.span`
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  border: 1px solid #e2e8f0;
-  color: #64748b;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #dadce0;
+  color: #5f6368;
+  background: #f8f9fa;
 `
 
 const ViewButton = styled.button`
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.875rem;
-  color: #4f46e5;
+  gap: 4px;
+  font-size: 14px;
+  color: #1967d2;
   background: none;
   border: none;
-  padding: 0.375rem 0.5rem;
-  border-radius: 0.375rem;
+  padding: 6px 8px;
+  border-radius: 4px;
   cursor: pointer;
+  font-weight: 500;
   
   &:hover {
-    background-color: #f8fafc;
-    color: #4338ca;
+    background-color: #f1f3f4;
   }
 `
 
@@ -495,48 +475,24 @@ const PaginationContainer = styled.div`
 `
 
 const PageButton = styled.button<{ active?: boolean; disabled?: boolean }>`
-  background: ${props => props.active ? '#4f46e5' : 'white'};
-  color: ${props => props.active ? 'white' : '#64748b'};
+  background: ${props => props.active ? '#1967d2' : 'white'};
+  color: ${props => props.active ? 'white' : '#5f6368'};
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid ${props => props.active ? '#4f46e5' : '#e2e8f0'};
+  border: 1px solid ${props => props.active ? '#1967d2' : '#dadce0'};
   cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
   opacity: ${props => props.disabled ? 0.5 : 1};
-  transition: all 0.2s ease;
-  font-weight: ${props => props.active ? '600' : 'normal'};
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: ${props => props.active ? '500' : 'normal'};
   
   &:hover {
-    background: ${props => props.disabled ? (props.active ? '#4f46e5' : 'white') : (props.active ? '#4338ca' : '#f1f5f9')};
+    background: ${props => props.disabled ? (props.active ? '#1967d2' : 'white') : (props.active ? '#1558b0' : '#f1f3f4')};
     transform: ${props => props.disabled ? 'none' : 'translateY(-2px)'};
   }
-`
-
-const LoadingSpinner = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 200px;
-  color: #64748b;
-  font-size: 1.125rem;
-`
-
-const ErrorMessage = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 200px;
-  color: #ef4444;
-  font-size: 1.125rem;
-  text-align: center;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 0.5rem;
-  margin: 1rem 0;
-  padding: 1rem;
 `
 
 const PageInfo = styled.div`
@@ -551,101 +507,491 @@ const PageInfo = styled.div`
   border: 1px solid #e2e8f0;
 `
 
-export default function Resources(): React.JSX.Element {
-  const [searchTerm, setSearchTerm] = useState<string>("")
-  const [activeTab, setActiveTab] = useState<TabType>("students")
-  const [currentPage, setCurrentPage] = useState<number>(1)
-  const [resourcesPerPage] = useState<number>(6)
-  const [apiResources, setApiResources] = useState<IResource[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
+export default function Resources() {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [activeTab, setActiveTab] = useState("students")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [resourcesPerPage] = useState(6)
   const navigate = useNavigate()
-  const { user } = useAuth()
 
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN'
+  const studentResources = [
+    {
+      id: "career-assessment",
+      title: "Career Assessment Tools",
+      description: "Discover your interests, skills, and potential career paths",
+      fullDescription:
+        "Our comprehensive career assessment tools help you understand your personality, interests, values, and skills to identify potential career paths that align with who you are. These scientifically-backed assessments provide detailed reports and personalized recommendations to guide your career exploration journey.",
+      category: "Assessment",
+      type: "Interactive",
+      rating: 4.8,
+      link: "https://example.com/career-assessment",
+      icon: Target,
+      featured: true,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "Personality assessment based on Holland Code theory",
+        "Skills inventory and gap analysis",
+        "Values clarification exercises",
+        "Personalized career recommendations",
+        "Detailed PDF reports",
+      ],
+      duration: "30-45 minutes",
+      difficulty: "Beginner",
+    },
+    {
+      id: "resume-builder",
+      title: "Resume Builder & Templates",
+      description: "Professional resume templates and building tools",
+      fullDescription:
+        "Create professional, ATS-friendly resumes with our collection of modern templates and intuitive builder tool. Whether you're a recent graduate or changing careers, our platform provides step-by-step guidance to showcase your experience effectively.",
+      category: "Job Prep",
+      type: "Tool",
+      rating: 4.7,
+      link: "https://example.com/resume-builder",
+      icon: FileText,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "20+ professional templates",
+        "ATS-optimization checker",
+        "Real-time editing and preview",
+        "Export to PDF and Word formats",
+        "Industry-specific examples",
+      ],
+      duration: "15-30 minutes",
+      difficulty: "Beginner",
+    },
+    {
+      id: "interview-prep",
+      title: "Interview Preparation Guide",
+      description: "Tips, common questions, and practice scenarios",
+      fullDescription:
+        "Master the art of interviewing with our comprehensive preparation guide. From behavioral questions to technical interviews, we provide strategies, sample answers, and practice opportunities to boost your confidence.",
+      category: "Job Prep",
+      type: "Guide",
+      rating: 4.9,
+      link: "https://example.com/interview-prep",
+      icon: MessageCircle,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "500+ common interview questions",
+        "STAR method framework",
+        "Video practice sessions",
+        "Industry-specific scenarios",
+        "Mock interview scheduling",
+      ],
+      duration: "2-3 hours",
+      difficulty: "Intermediate",
+    },
+    {
+      id: "industry-exploration",
+      title: "Industry Exploration Hub",
+      description: "Explore different industries and career opportunities",
+      fullDescription:
+        "Dive deep into various industries to understand career opportunities, growth trends, salary expectations, and required skills. Our comprehensive database covers traditional and emerging fields.",
+      category: "Exploration",
+      type: "Database",
+      rating: 4.6,
+      link: "https://example.com/industry-hub",
+      icon: Briefcase,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "50+ industry profiles",
+        "Salary and growth data",
+        "Required skills breakdown",
+        "Day-in-the-life videos",
+        "Professional interviews",
+      ],
+      duration: "1-2 hours per industry",
+      difficulty: "Beginner",
+    },
+    {
+      id: "scholarships",
+      title: "Scholarship & Financial Aid",
+      description: "Find funding opportunities for your education",
+      fullDescription:
+        "Access our comprehensive database of scholarships, grants, and financial aid opportunities. Filter by criteria that match your background, interests, and academic achievements.",
+      category: "Financial",
+      type: "Database",
+      rating: 4.5,
+      link: "https://example.com/scholarships",
+      icon: GraduationCap,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "10,000+ scholarship opportunities",
+        "Personalized matching algorithm",
+        "Application deadline tracking",
+        "Essay writing assistance",
+        "Financial aid calculator",
+      ],
+      duration: "Ongoing",
+      difficulty: "Beginner",
+    },
+    {
+      id: "networking",
+      title: "Networking & Mentorship",
+      description: "Connect with professionals in your field of interest",
+      fullDescription:
+        "Build meaningful professional relationships through our networking platform. Connect with industry professionals, find mentors, and participate in virtual networking events.",
+      category: "Networking",
+      type: "Platform",
+      rating: 4.4,
+      link: "https://example.com/networking",
+      icon: Users,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "Professional mentor matching",
+        "Industry networking events",
+        "LinkedIn optimization tips",
+        "Informational interview guides",
+        "Professional communication templates",
+      ],
+      duration: "Ongoing",
+      difficulty: "Intermediate",
+    },
+  ]
 
-  const handleBackToDashboard = () => {
-    navigate('/super-admin-dashboard')
-  }
+  const parentResources = [
+    {
+      id: "teen-career-support",
+      title: "Supporting Your Teen's Career Journey",
+      description: "A comprehensive guide for parents on career guidance",
+      fullDescription:
+        "Learn how to effectively support your teenager's career exploration without overwhelming them. This guide provides practical strategies for meaningful conversations, understanding their interests, and helping them make informed decisions.",
+      category: "Guidance",
+      type: "Guide",
+      rating: 4.8,
+      link: "https://example.com/teen-support",
+      icon: Heart,
+      featured: true,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "Age-appropriate conversation starters",
+        "Understanding generational differences",
+        "Supporting without pressuring",
+        "Recognizing signs of career anxiety",
+        "Building confidence and independence",
+      ],
+      duration: "1-2 hours",
+      difficulty: "Beginner",
+    },
+    {
+      id: "assessment-understanding",
+      title: "Understanding Career Assessments",
+      description: "How to interpret and discuss career assessment results",
+      fullDescription:
+        "Decode career assessment results and learn how to have productive discussions with your teen about their findings. Understand the science behind assessments and how to use results constructively.",
+      category: "Assessment",
+      type: "Article",
+      rating: 4.7,
+      link: "https://example.com/assessment-guide",
+      icon: BookOpen,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "Assessment types explained",
+        "Interpreting personality results",
+        "Discussing strengths and challenges",
+        "Action planning from results",
+        "When to seek professional help",
+      ],
+      duration: "45 minutes",
+      difficulty: "Beginner",
+    },
+    {
+      id: "education-options",
+      title: "College vs. Trade School Discussion",
+      description: "Helping your child explore all post-secondary options",
+      fullDescription:
+        "Navigate the complex landscape of post-secondary education options. Understand the benefits of different paths and help your teen make decisions based on their goals, interests, and circumstances.",
+      category: "Education",
+      type: "Video",
+      rating: 4.6,
+      link: "https://example.com/education-options",
+      icon: Video,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "4-year college overview",
+        "Community college benefits",
+        "Trade school opportunities",
+        "Alternative education paths",
+        "ROI analysis tools",
+      ],
+      duration: "2 hours",
+      difficulty: "Intermediate",
+    },
+    {
+      id: "financial-planning",
+      title: "Financial Planning for Career Goals",
+      description: "Budgeting for education and career development",
+      fullDescription:
+        "Create a comprehensive financial plan for your child's career journey. Learn about education costs, career investment strategies, and how to prepare financially for different career paths.",
+      category: "Financial",
+      type: "Calculator",
+      rating: 4.5,
+      link: "https://example.com/financial-planning",
+      icon: TrendingUp,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "Education cost calculators",
+        "Career ROI analysis",
+        "Savings strategies",
+        "Financial aid planning",
+        "Budget templates",
+      ],
+      duration: "1-2 hours",
+      difficulty: "Intermediate",
+    },
+    {
+      id: "communication-strategies",
+      title: "Communication Strategies",
+      description: "How to have productive career conversations with your teen",
+      fullDescription:
+        "Master the art of career conversations with your teenager. Learn communication techniques that encourage open dialogue, build trust, and support their decision-making process.",
+      category: "Communication",
+      type: "Workshop",
+      rating: 4.9,
+      link: "https://example.com/communication",
+      icon: MessageCircle,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "Active listening techniques",
+        "Asking the right questions",
+        "Avoiding common pitfalls",
+        "Building trust and rapport",
+        "Conflict resolution strategies",
+      ],
+      duration: "3 hours",
+      difficulty: "Intermediate",
+    },
+  ]
 
-  // Fetch resources on component mount and when activeTab changes
-  useEffect(() => {
-    const fetchResources = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await ResourcesService.getResourcesByType(activeTab)
-        setApiResources(response.data || [])
-      } catch (err: any) {
-        console.error('Error fetching resources:', err)
-        setError(err.message || 'Failed to fetch resources')
-        // Fallback to dummy data if API fails
-        setApiResources([])
-      } finally {
-        setLoading(false)
-      }
+  const counselorResources = [
+    {
+      id: "counseling-practices",
+      title: "Career Counseling Best Practices",
+      description: "Evidence-based approaches to career guidance",
+      fullDescription:
+        "Stay current with the latest evidence-based practices in career counseling. This comprehensive resource covers theoretical frameworks, practical techniques, and ethical considerations for effective career guidance.",
+      category: "Professional",
+      type: "Training",
+      rating: 4.9,
+      link: "https://example.com/best-practices",
+      icon: UserCheck,
+      featured: true,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "Theoretical framework overview",
+        "Evidence-based interventions",
+        "Ethical guidelines and standards",
+        "Cultural competency training",
+        "Outcome measurement tools",
+      ],
+      duration: "8 hours",
+      difficulty: "Advanced",
+    },
+    {
+      id: "assessment-tools",
+      title: "Assessment Tools & Interpretation",
+      description: "Comprehensive guide to career assessment instruments",
+      fullDescription:
+        "Master the use of various career assessment tools and learn to interpret results effectively. This resource covers popular assessments, their applications, and how to communicate findings to clients.",
+      category: "Assessment",
+      type: "Manual",
+      rating: 4.8,
+      link: "https://example.com/assessment-tools",
+      icon: Target,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "Assessment tool comparison",
+        "Administration guidelines",
+        "Interpretation frameworks",
+        "Report writing templates",
+        "Client feedback strategies",
+      ],
+      duration: "6 hours",
+      difficulty: "Advanced",
+    },
+    {
+      id: "group-activities",
+      title: "Group Career Counseling Activities",
+      description: "Ready-to-use activities for group sessions",
+      fullDescription:
+        "Enhance your group career counseling sessions with these engaging, research-based activities. Each activity includes detailed instructions, materials needed, and learning objectives.",
+      category: "Activities",
+      type: "Resource Pack",
+      rating: 4.7,
+      link: "https://example.com/group-activities",
+      icon: Users,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "50+ group activities",
+        "Detailed facilitation guides",
+        "Printable worksheets",
+        "Age-appropriate variations",
+        "Assessment rubrics",
+      ],
+      duration: "Varies",
+      difficulty: "Intermediate",
+    },
+    {
+      id: "labor-market",
+      title: "Labor Market Information",
+      description: "Current job market trends and salary data",
+      fullDescription:
+        "Access up-to-date labor market information to inform your career counseling practice. This resource provides current trends, salary data, and employment projections across various industries.",
+      category: "Data",
+      type: "Database",
+      rating: 4.6,
+      link: "https://example.com/labor-market",
+      icon: TrendingUp,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "Real-time job market data",
+        "Salary benchmarking tools",
+        "Employment projections",
+        "Skills demand analysis",
+        "Regional market comparisons",
+      ],
+      duration: "Ongoing",
+      difficulty: "Intermediate",
+    },
+    {
+      id: "special-populations",
+      title: "Special Populations Guidance",
+      description: "Career counseling for diverse student populations",
+      fullDescription:
+        "Develop culturally responsive career counseling approaches for diverse populations. This resource addresses unique challenges and provides strategies for working with various student groups.",
+      category: "Diversity",
+      type: "Guide",
+      rating: 4.8,
+      link: "https://example.com/special-populations",
+      icon: Heart,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "Cultural competency frameworks",
+        "Population-specific strategies",
+        "Bias recognition training",
+        "Inclusive assessment practices",
+        "Community resource mapping",
+      ],
+      duration: "4 hours",
+      difficulty: "Advanced",
+    },
+    {
+      id: "technology-counseling",
+      title: "Technology in Career Counseling",
+      description: "Digital tools and platforms for modern career guidance",
+      fullDescription:
+        "Integrate technology effectively into your career counseling practice. Explore digital tools, online platforms, and virtual counseling techniques that enhance client engagement and outcomes.",
+      category: "Technology",
+      type: "Review",
+      rating: 4.5,
+      link: "https://example.com/tech-counseling",
+      icon: Briefcase,
+      image: "/placeholder.svg?height=400&width=600",
+      features: [
+        "Digital tool evaluations",
+        "Virtual counseling best practices",
+        "Online assessment platforms",
+        "Social media integration",
+        "Privacy and security guidelines",
+      ],
+      duration: "3 hours",
+      difficulty: "Intermediate",
+    },
+  ]
+
+  // Add learning style resources from the JSON file
+  const learningStyleResources = [
+    {
+      id: "learning-style-quiz",
+      title: "LearningStyleQuiz.com",
+      description: "Free online learning style quiz (J-KAV model) with instant results, no email or signup needed.",
+      fullDescription:
+        'LearningStyleQuiz.com offers a quick "What is Your Learning Style?" test that is free to take with no email or registration required. Aimed at students of all ages, this quiz assesses your preferred learning modality using the site\'s unique J-KAV™ framework – combining personality factors with the classic modalities (visual, auditory, kinesthetic). It only takes a few minutes to complete, after which you receive immediate feedback on how you learn best and tips to improve your learning effectiveness. The site is dedicated to helping users "make the most of their learning experiences", tailoring study strategies to whether you learn better by seeing, hearing, or doing.',
+      category: "Assessment",
+      type: "Quiz",
+      rating: 4.7,
+      link: "https://www.learningstylequiz.com",
+      icon: Target,
+      image: "https://image.thum.io/get/https://www.learningstylequiz.com",
+      features: [
+        "J-KAV learning style model",
+        "No signup required",
+        "Instant results",
+        "Personalized study tips",
+        "All ages appropriate",
+      ],
+      duration: "5-10 minutes",
+      difficulty: "Beginner",
+      tags: ["learning-styles", "VARK-model", "quiz", "no-signup", "all-ages"],
+      free: true,
+    },
+    {
+      id: "education-planner",
+      title: "EducationPlanner – What's Your Learning Style?",
+      description:
+        "20-question self-assessment for students (visual, auditory, or tactile learner) with personalized tips, by EducationPlanner.org.",
+      fullDescription:
+        "EducationPlanner's \"What's Your Learning Style?\" quiz is a short, 20-question online assessment designed to help students discover their primary learning style and how it affects their understanding and problem-solving. After answering the questions, you receive instant results showing whether you are a visual, auditory, or tactile learner, along with a profile describing your style and study tips. This resource is straightforward and geared toward middle and high school students, with a printer-friendly results option. It's offered free on EducationPlanner.org and does not require any login or personal information.",
+      category: "Assessment",
+      type: "Self-Assessment",
+      rating: 4.6,
+      link: "https://www.educationplanner.org/students/self-assessments/learning-styles",
+      icon: BookOpen,
+      image: "https://image.thum.io/get/https://www.educationplanner.org/students/self-assessments/learning-styles",
+      features: [
+        "20-question assessment",
+        "Visual, auditory, tactile classification",
+        "Printer-friendly results",
+        "K-12 student focused",
+        "No login required",
+      ],
+      duration: "10-15 minutes",
+      difficulty: "Beginner",
+      tags: ["student-assessment", "visual-auditory-tactile", "educationplanner", "self-assessment", "K12"],
+      free: true,
+    },
+    {
+      id: "vark-questionnaire",
+      title: "VARK Learning Styles Questionnaire",
+      description:
+        "Official VARK questionnaire (16 questions) that identifies your preference among Visual, Aural, Read/Write, and Kinesthetic learning modalities.",
+      fullDescription:
+        "The VARK Questionnaire is the classic assessment that presents 16 scenario-based questions – on each, you select one or more answers that match your preferred approach. When finished, you get an immediate result showing your learning preference profile across the four VARK modalities: Visual, Aural (Auditory), Read/Write, and Kinesthetic. The feedback indicates which modality (or combination) you prefer and often suggests study strategies aligned with your style. This official VARK quiz is freely accessible and doesn't require any sign-up: you simply choose answers and click \"OK\" to instantly see your results. It's widely used in education to help learners of all ages understand if they learn best by seeing, hearing, reading, or doing.",
+      category: "Assessment",
+      type: "Questionnaire",
+      rating: 4.9,
+      link: "http://vark-learn.com/english/page.asp?p=questionnaire",
+      icon: Target,
+      image: "https://image.thum.io/get/http://vark-learn.com/english/page.asp?p=questionnaire",
+      features: [
+        "16 scenario-based questions",
+        "Four learning modalities assessment",
+        "Immediate results",
+        "Study strategy recommendations",
+        "Widely used in education",
+      ],
+      duration: "5-10 minutes",
+      difficulty: "Beginner",
+      tags: ["VARK", "official-resource", "modalities", "self-assessment", "instant-feedback"],
+      free: true,
+    },
+  ]
+
+  // Add learning style resources to student resources
+  const allStudentResources = [...studentResources, ...learningStyleResources]
+
+  const getResourcesByTab = () => {
+    switch (activeTab) {
+      case "students":
+        return allStudentResources
+      case "parents":
+        return parentResources
+      case "counselors":
+        return counselorResources
+      default:
+        return allStudentResources
     }
-
-    // Reset pagination when tab changes
-    setCurrentPage(1)
-    fetchResources()
-  }, [activeTab])
-
-  // Helper function to convert API resource to component Resource format
-  const convertApiResourceToComponentResource = (apiResource: IResource): Resource => {
-    // Map category to appropriate icon
-    const getIconByCategory = (category: string): LucideIcon => {
-      switch (category.toLowerCase()) {
-        case 'assessment': return Target
-        case 'job prep': return Briefcase
-        case 'guide': return BookOpen
-        case 'exploration': return Search
-        case 'financial': return TrendingUp
-        case 'networking': return Users
-        case 'guidance': return Heart
-        case 'education': return GraduationCap
-        case 'video': return Video
-        case 'communication': return MessageCircle
-        case 'professional': return UserCheck
-        case 'activities': return Users
-        case 'data': return TrendingUp
-        case 'diversity': return Heart
-        case 'technology': return Briefcase
-        case 'quiz': return Target
-        case 'self-assessment': return BookOpen
-        case 'questionnaire': return Target
-        default: return FileText
-      }
-    }
-
-    return {
-      id: apiResource.id,
-      title: apiResource.title,
-      description: apiResource.description,
-      fullDescription: apiResource.full_description,
-      category: apiResource.category,
-      type: apiResource.type,
-      rating: apiResource.rating,
-      link: apiResource.link || '',
-      icon: getIconByCategory(apiResource.category),
-      featured: apiResource.featured,
-      image: apiResource.image || "/placeholder.svg?height=400&width=600",
-      features: apiResource.features || [],
-      duration: apiResource.duration || '',
-      difficulty: apiResource.difficulty || 'Beginner',
-      tags: apiResource.tags,
-      free: apiResource.free
-    }
-  }
-
-  const getResourcesByTab = (): Resource[] => {
-    // If loading or error, return empty array (or you could return dummy data as fallback)
-    if (loading || error || !apiResources.length) {
-      return []
-    }
-
-    // Convert API resources to component resources
-    return apiResources.map(convertApiResourceToComponentResource)
   }
 
   const filteredResources = getResourcesByTab().filter(
@@ -655,19 +1001,16 @@ export default function Resources(): React.JSX.Element {
       resource.category.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const handleResourceClick = (resource: Resource): void => {
-    if (resource && typeof resource === "object") {
-      // Create a serializable version of the resource without the icon component
-      const serializableResource = { ...resource };
-      
-      // Remove the icon property which contains a React component
-      delete serializableResource.icon;
-      
-      // Navigate to the detail page with the serializable resource
-      navigate(`/resources/${resource.id}`, { state: { resource: serializableResource } });
-    } else {
-      console.error("Invalid resource clicked:", resource)
-    }
+  const handleResourceClick = (resource: any) => {
+    // Remove the icon component completely as it can't be serialized
+    const { icon, ...serializableResource } = resource;
+    
+    // Navigate to the detail page with only serializable data
+    navigate(`/resources/${resource.id}`, { 
+      state: { 
+        resource: serializableResource
+      } 
+    });
   }
 
   // Pagination logic
@@ -691,16 +1034,16 @@ export default function Resources(): React.JSX.Element {
     pageNumbers.push(i)
   }
 
-  const ResourceCard: React.FC<ResourceCardProps> = ({ resource }) => {
+  const ResourceCard = ({ resource }: { resource: any }) => {
     const IconComponent = resource.icon
 
     return (
-      <ResourceCardWrapper featured={resource.featured} onClick={() => handleResourceClick(resource)}>
+      <ResourceCardWrapper onClick={() => handleResourceClick(resource)}>
         <CardHeader>
           <CardHeaderTop>
             <IconContainer>
               <IconBadge>
-                {IconComponent && <IconComponent size={16} />}
+                <IconComponent size={16} />
               </IconBadge>
               {resource.featured && <FeaturedBadge>Featured</FeaturedBadge>}
             </IconContainer>
@@ -729,31 +1072,30 @@ export default function Resources(): React.JSX.Element {
 
   return (
     <PageContainer>
-      {/* Back to Dashboard button for Super Admins */}
-      {isSuperAdmin && (
-        <BackToDashboardButton onClick={handleBackToDashboard}>
-          <ArrowLeft />
-          Back to Dashboard
-        </BackToDashboardButton>
-      )}
-      
       {/* Header */}
       <Header>
         <HeaderContent>
           <LogoContainer>
-            <LogoIcon>
-              {/* <LogoImg src={luminateLogo} alt="Raisec Test"  /> */}
-            </LogoIcon>
-            <LogoText>
-
-              <h2>EduPathways Portal</h2>
-              <p>Your Gateway to Learning Success</p>
-            </LogoText>
+            <img 
+              src="/luminate-logo.png" 
+              alt="Luminate Logo" 
+              style={{ 
+                width: '120px', 
+                height: 'auto',
+                objectFit: 'contain'
+              }} 
+            />
           </LogoContainer>
-          <UpdatedInfo>
-            <Clock size={16} />
-            <span>Updated Daily</span>
-          </UpdatedInfo>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <UpdatedInfo>
+              <Clock size={16} />
+              <span>Updated Daily</span>
+            </UpdatedInfo>
+            <BackButton onClick={() => navigate('/ecosystem')}>
+              <ArrowLeft />
+              Back to Ecosystem
+            </BackButton>
+          </div>
         </HeaderContent>
       </Header>
 
@@ -801,72 +1143,55 @@ export default function Resources(): React.JSX.Element {
               <h3>Student Resources</h3>
               <p>Tools and guidance to help you discover and pursue your ideal learning path</p>
             </TabHeader>
-            
-            {loading && (
-              <LoadingSpinner>
-                Loading resources...
-              </LoadingSpinner>
-            )}
-            
-            {error && (
-              <ErrorMessage>
-                {error}
-              </ErrorMessage>
-            )}
-            
-            {!loading && !error && (
-              <>
-                <ResourceGrid>
-                  {currentResources.map((resource, index) => (
-                    <ResourceCard key={resource.id || index} resource={resource} />
-                  ))}
-                </ResourceGrid>
+            <ResourceGrid>
+              {currentResources.map((resource, index) => (
+                <ResourceCard key={resource.id || index} resource={resource} />
+              ))}
+            </ResourceGrid>
 
-                {/* Modern Pagination Controls */}
-                {totalPages > 1 && (
-                  <PaginationContainer>
-                    <PageButton 
-                      onClick={() => setCurrentPage(currentPage - 1)} 
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft size={18} />
-                    </PageButton>
-                    
-                    {startPage > 1 && (
-                      <>
-                        <PageButton onClick={() => setCurrentPage(1)}>1</PageButton>
-                        {startPage > 2 && <span>...</span>}
-                      </>
-                    )}
-                    
-                    {pageNumbers.map(number => (
-                      <PageButton
-                        key={number}
-                        active={currentPage === number}
-                        onClick={() => setCurrentPage(number)}
-                      >
-                        {number}
-                      </PageButton>
-                    ))}
-                    
-                    {endPage < totalPages && (
-                      <>
-                        {endPage < totalPages - 1 && <span>...</span>}
-                        <PageButton onClick={() => setCurrentPage(totalPages)}>
-                          {totalPages}
-                        </PageButton>
-                      </>
-                    )}
-                    
-                    <PageButton 
-                      onClick={() => setCurrentPage(currentPage + 1)} 
-                      disabled={currentPage === totalPages}
-                    >
-                      <ChevronRight size={18} />
-                    </PageButton>
-                  </PaginationContainer>
+            {/* Modern Pagination Controls */}
+            {totalPages > 1 && (
+              <PaginationContainer>
+                <PageButton 
+                  onClick={() => setCurrentPage(currentPage - 1)} 
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft size={18} />
+                </PageButton>
+                
+                {startPage > 1 && (
+                  <>
+                    <PageButton onClick={() => setCurrentPage(1)}>1</PageButton>
+                    {startPage > 2 && <span>...</span>}
+                  </>
                 )}
-              </>
+                
+                {pageNumbers.map(number => (
+                  <PageButton
+                    key={number}
+                    active={currentPage === number}
+                    onClick={() => setCurrentPage(number)}
+                  >
+                    {number}
+                  </PageButton>
+                ))}
+                
+                {endPage < totalPages && (
+                  <>
+                    {endPage < totalPages - 1 && <span>...</span>}
+                    <PageButton onClick={() => setCurrentPage(totalPages)}>
+                      {totalPages}
+                    </PageButton>
+                  </>
+                )}
+                
+                <PageButton 
+                  onClick={() => setCurrentPage(currentPage + 1)} 
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight size={18} />
+                </PageButton>
+              </PaginationContainer>
             )}
           </TabContent>
 
@@ -875,26 +1200,11 @@ export default function Resources(): React.JSX.Element {
               <h3>Parent Resources</h3>
               <p>Support your child's learning journey with expert guidance and practical tools</p>
             </TabHeader>
-            
-            {loading && (
-              <LoadingSpinner>
-                Loading resources...
-              </LoadingSpinner>
-            )}
-            
-            {error && (
-              <ErrorMessage>
-                {error}
-              </ErrorMessage>
-            )}
-            
-            {!loading && !error && (
-              <ResourceGrid>
-                {filteredResources.map((resource, index) => (
-                  <ResourceCard key={resource.id || index} resource={resource} />
-                ))}
-              </ResourceGrid>
-            )}
+            <ResourceGrid>
+              {filteredResources.map((resource, index) => (
+                <ResourceCard key={resource.id || index} resource={resource} />
+              ))}
+            </ResourceGrid>
           </TabContent>
 
           <TabContent active={activeTab === "counselors"}>
@@ -902,26 +1212,11 @@ export default function Resources(): React.JSX.Element {
               <h3>Counselor Resources</h3>
               <p>Professional development and practical tools for effective educational counseling</p>
             </TabHeader>
-            
-            {loading && (
-              <LoadingSpinner>
-                Loading resources...
-              </LoadingSpinner>
-            )}
-            
-            {error && (
-              <ErrorMessage>
-                {error}
-              </ErrorMessage>
-            )}
-            
-            {!loading && !error && (
-              <ResourceGrid>
-                {filteredResources.map((resource, index) => (
-                  <ResourceCard key={resource.id || index} resource={resource} />
-                ))}
-              </ResourceGrid>
-            )}
+            <ResourceGrid>
+              {filteredResources.map((resource, index) => (
+                <ResourceCard key={resource.id || index} resource={resource} />
+              ))}
+            </ResourceGrid>
           </TabContent>
         </TabsContainer>
 
@@ -930,20 +1225,19 @@ export default function Resources(): React.JSX.Element {
           <StatsTitle>Portal Statistics</StatsTitle>
           <StatsGrid>
             <StatItem color="#4f46e5">
-              <div className="value">500+</div>
+              <div className="value">10+</div>
               <div className="label">Learning Resources</div>
             </StatItem>
             <StatItem color="#10b981">
-              <div className="value">50K+</div>
+              <div className="value">10+</div>
               <div className="label">Students Helped</div>
             </StatItem>
             <StatItem color="#8b5cf6">
-              <div className="value">1K+</div>
+              <div className="value">10+</div>
               <div className="label">Counselors</div>
             </StatItem>
             <StatItem color="#f59e0b">
-              <div className="value">95%</div>
-              <div className="label">Satisfaction Rate</div>
+              <img src="/luminate-logo.png" alt="Luminate Logo" style={{ width: '60px', height: 'auto' }} />
             </StatItem>
           </StatsGrid>
         </StatsSection>

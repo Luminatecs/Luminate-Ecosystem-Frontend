@@ -313,6 +313,9 @@ const LoginPage: React.FC = () => {
           // Navigate based on user role and setup status
           if (user.role === 'SUPER_ADMIN') {
             navigate('/super-admin-dashboard');
+          } else if (user.role === 'ACCESS_ADMIN') {
+            // ACCESS_ADMIN goes directly to settings page (resources management only)
+            navigate('/admin/settings');
           } else if (user.role === 'ORG_ADMIN') {
             if (user.organizationSetupComplete) {
               navigate('/organization-dashboard');

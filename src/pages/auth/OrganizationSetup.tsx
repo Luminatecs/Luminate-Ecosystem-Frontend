@@ -26,6 +26,8 @@ import {
 const SetupContainer = styled(AuthContainer)`
   display: flex;
   padding: 0;
+  height: 100vh;
+  overflow: hidden;
 `;
 
 const Sidebar = styled.div`
@@ -35,6 +37,12 @@ const Sidebar = styled.div`
   padding: 2rem;
   display: flex;
   flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  height: 100vh;
+  overflow-y: auto;
   
   @media (max-width: 1024px) {
     display: none;
@@ -121,10 +129,17 @@ const MainContent = styled(AuthCard)`
   flex-direction: column;
   max-width: none;
   margin: 0;
+  margin-left: 320px;
   border-radius: 0;
   padding: 0;
   box-shadow: none;
   background: #f8fafc;
+  height: 100vh;
+  overflow: hidden;
+  
+  @media (max-width: 1024px) {
+    margin-left: 0;
+  }
 `;
 
 const Header = styled.div`
@@ -172,16 +187,16 @@ const ProgressWrapper = styled.div`
 
 const ProgressBar = styled.div`
   width: 100%;
-  height: 2px;
+  height: 3px;
   background: #e2e8f0;
-  border-radius: 1px;
+  /* border-radius: 1px; */
   overflow: hidden;
 `;
 
 const ProgressFill = styled.div<{ progress: number }>`
   height: 100%;
   background: #3b82f6;
-  border-radius: 1px;
+  /* border-radius: 1px; */
   width: ${props => props.progress}%;
   transition: width 0.3s ease;
 `;
@@ -195,12 +210,12 @@ const ProgressText = styled.div`
 
 const FormSection = styled.div`
   flex: 1;
-  padding: 2rem;
+  /* padding: 2rem; */
   overflow-y: auto;
 `;
 
 const FormContainer = styled.div`
-  max-width: 800px;
+  /* max-width: 800px; */
   margin: 0 auto;
 `;
 
@@ -212,8 +227,8 @@ const Form = styled.form`
 
 const Section = styled.div`
   background: white;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  border-radius: 16px;
+  /* border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px; */
   padding: 2.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -453,6 +468,7 @@ const OrganizationSetup: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     
     if (!validateForm()) {
       return;
@@ -493,21 +509,17 @@ const OrganizationSetup: React.FC = () => {
 
       Logger.success('OrganizationSetup - Organization setup completed successfully', response.data);
       
+      // Navigate immediately to organization dashboard with full page reload
       setSuccessMessage('Organization setup completed successfully! Redirecting to dashboard...');
-      
-      // Allow time for the server state to update and success message to be shown
-      setTimeout(() => {
-          Logger.info('OrganizationSetup - Navigating to dashboard with full page reload');
-          window.location.href = '/organization-dashboard';
-      }, 3000);
+      Logger.info('OrganizationSetup - Navigating to dashboard');
+      window.location.href = '/organization-dashboard';
 
     } catch (error: any) {
       Logger.error('OrganizationSetup - Setup failed', error);
       setValidationErrors({
         submit: error.message || 'Setup failed. Please try again.'
       });
-    } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Only reset on error
     }
   };
 
@@ -550,12 +562,6 @@ const OrganizationSetup: React.FC = () => {
       </Sidebar>
 
       <MainContent>
-        <Header>
-          <HeaderContent>
-            <Title>Organization Profile Setup</Title>
-            <Subtitle>Complete your organization details to start managing students and resources</Subtitle>
-          </HeaderContent>
-        </Header>
 
         <ProgressContainer>
           <ProgressWrapper>

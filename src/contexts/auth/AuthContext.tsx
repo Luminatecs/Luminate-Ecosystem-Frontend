@@ -318,6 +318,7 @@ interface AuthContextType {
   hasAnyRole: (roles: UserRole[]) => boolean;
   isOrgAdmin: () => boolean;
   isSuperAdmin: () => boolean;
+  isAccessAdmin: () => boolean;
   isIndividual: () => boolean;
   isOrgWard: () => boolean;
 }
@@ -558,6 +559,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return hasRole(UserRole.SUPER_ADMIN);
   };
 
+  const isAccessAdmin = (): boolean => {
+    return hasRole(UserRole.ACCESS_ADMIN);
+  };
+
   const isIndividual = (): boolean => {
     return hasRole(UserRole.INDIVIDUAL);
   };
@@ -626,6 +631,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     hasAnyRole,
     isOrgAdmin,
     isSuperAdmin,
+    isAccessAdmin,
     isIndividual,
     isOrgWard,
   };

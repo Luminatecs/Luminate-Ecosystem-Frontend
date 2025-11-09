@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/auth';
 import { ChangePasswordModal } from '../../components/auth/ChangePasswordModal';
 
@@ -389,21 +389,26 @@ const modules: Module[] = [
 
 const EcosystemHub: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout } = useAuth();
   const [activeModule, setActiveModule] = useState<Module | null>(null);
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-  // Check if user needs to change password (logged in with temp code)
+  // Check if user needs to change password (logged in with temp code or from navigation state)
   useEffect(() => {
     const needsPasswordChange = sessionStorage.getItem('needsPasswordChange');
-    if (needsPasswordChange === 'true') {
+    const stateShowModal = (location.state as any)?.showPasswordChangeModal;
+    
+    if (needsPasswordChange === 'true' || stateShowModal) {
       setShowPasswordModal(true);
+      
+      // Clear the navigation state to prevent modal from showing again on refresh
+      if (stateShowModal) {
+        navigate(location.pathname, { replace: true, state: {} });
+      }
     }
-  }, []);
-
-  // Determine if we're in development mode
-  const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
+  }, [location, navigate]);
 
   const handleModuleHover = (module: Module, event: React.MouseEvent) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -435,16 +440,24 @@ const EcosystemHub: React.FC = () => {
   };
 
   const handleModuleClick = (module: Module) => {
-    // Choose URL based on environment
-    const targetUrl = isDevelopment ? module.localUrl : module.productionUrl;
-    
     console.log(`Navigating to ${module.name}:`, {
-      environment: isDevelopment ? 'development' : 'production',
-      url: targetUrl
+      moduleId: module.id
     });
 
-    // Open external application in new tab/window
-    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    // Navigate to internal pages based on module ID
+    switch (module.id) {
+      case 'resources':
+        navigate('/resources');
+        break;
+      case 'library':
+        navigate('/library');
+        break;
+      case 'kaeval':
+        navigate('/kaeval');
+        break;
+      default:
+        console.warn(`No route defined for module: ${module.id}`);
+    }
   };
 
   const handleLogout = async () => {

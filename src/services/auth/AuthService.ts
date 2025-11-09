@@ -18,8 +18,9 @@ export interface ApiResponse<T = any> {
 
 export interface WardBulkCreateRequest {
   wards: {
-    name: string;
-    email: string;
+    guardianName: string;
+    guardianEmail: string;
+    wardName: string;
     educationLevel: string;
   }[];
 }
@@ -126,9 +127,15 @@ class AuthServiceClass {
   }
 
   // Create ward (single)
-  async createWard(data: { name: string; email: string; educationLevel: string }): Promise<ApiResponse> {
+  async createWard(data: { 
+    guardianName: string; 
+    guardianEmail: string; 
+    wardName: string; 
+    educationLevel: string;
+    organizationId?: string; // Optional for SUPER_ADMIN
+  }): Promise<ApiResponse> {
     try {
-      const response = await apiClient.post<ApiResponse>('/wards', data);
+      const response = await apiClient.post<ApiResponse>('/auth/create-ward', data);
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Ward creation failed');
@@ -136,9 +143,9 @@ class AuthServiceClass {
   }
 
   // Create wards in bulk
-  async createWardsBulk(data: WardBulkCreateRequest): Promise<ApiResponse> {
+  async createWardsBulk(data: WardBulkCreateRequest & { organizationId?: string }): Promise<ApiResponse> {
     try {
-      const response = await apiClient.post<ApiResponse>('/wards/bulk', data);
+      const response = await apiClient.post<ApiResponse>('/auth/create-wards-bulk', data);
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Bulk ward creation failed');
@@ -158,12 +165,27 @@ class AuthServiceClass {
   }
 
   // Get organization wards
-  async getOrganizationWards(): Promise<ApiResponse> {
+  async getOrganizationWards(organizationId?: string): Promise<ApiResponse> {
     try {
-      const response = await apiClient.get<ApiResponse>('/wards');
+      const url = organizationId 
+        ? `/auth/organization-wards?organizationId=${organizationId}`
+        : '/auth/organization-wards';
+      const response = await apiClient.get<ApiResponse>(url);
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Failed to fetch wards');
+    }
+  }
+
+  // Assign credentials to all unassigned wards
+  async assignWardsCredentials(organizationId?: string): Promise<ApiResponse> {
+    try {
+      const response = await apiClient.post<ApiResponse>('/auth/assign-wards-credentials', 
+        organizationId ? { organizationId } : {}
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to assign credentials');
     }
   }
 

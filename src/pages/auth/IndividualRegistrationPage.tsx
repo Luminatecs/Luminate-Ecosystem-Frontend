@@ -6,7 +6,6 @@ import { AuthService } from '../../services/auth';
 import Logger from '../../utils/logUtils';
 import Button, { ButtonState } from '../../components/ui/Button';
 import {
-  AuthContainer,
   AuthTitle,
   AuthSubtitle,
   FormGroup,
@@ -20,29 +19,16 @@ import {
  */
 const RegisterContainer = styled.div`
   display: flex;
-  background: rgba(255, 255, 255, 0.95);
-  /* border-radius: 20px; */
-  box-shadow: 
-    0 10px 40px rgba(0, 0, 0, 0.08),
-    0 4px 12px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: white;
   overflow: hidden;
-  /* max-width: 900px;
-  width: 90%; */
-  /* min-height: 600px; */
-  height: 99vh;
+  width: 100%;
+  height: 100vh;
   position: relative;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, rgba(66, 153, 225, 0.4) 50%, transparent 100%);
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
   }
 `;
 
@@ -50,50 +36,59 @@ const RegisterContainer = styled.div`
  * Form Section
  */
 const FormSection = styled.div`
-  flex: 0.6;
-  padding: 3rem;
+  flex: 1;
+  padding: 48px;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  
+  /* Hide scrollbar */
+  scrollbar-width: none;
   -ms-overflow-style: none;
-  scrollbar-width: none; 
   
   &::-webkit-scrollbar {
-    display: none; 
+    display: none;
   }
-  max-height: 650px;
+
+  @media (max-width: 768px) {
+    padding: 32px 24px;
+    order: 2;
+  }
+
+  @media (max-width: 480px) {
+    padding: 24px 16px;
+  }
 `;
 
 /**
  * Welcome Section
  */
 const WelcomeSection = styled.div`
-  flex: 1;
-  background: linear-gradient(135deg, #2c5282 0%, #4299e1 100%);
+  flex: 0.8;
+  background: linear-gradient(135deg, #1967d2 0%, #1557b0 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 3rem;
+  padding: 48px;
   color: white;
   text-align: center;
   position: relative;
   overflow: hidden;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    pointer-events: none;
+  @media (max-width: 768px) {
+    flex: none;
+    min-height: 250px;
+    padding: 32px 24px;
+    order: 1;
+  }
+
+  @media (max-width: 480px) {
+    min-height: 200px;
+    padding: 24px 16px;
   }
 `;
 
-/**
- * Form Component
- */
 const Form = styled.form`
   width: 100%;
   flex: 1;
@@ -102,40 +97,56 @@ const Form = styled.form`
 
 const Select = styled.select`
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background: #f8fafc;
-  transition: all 0.2s ease;
+  padding: 12px 16px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+  color: #202124;
+  transition: all 0.15s ease;
   box-sizing: border-box;
 
   &:focus {
     outline: none;
-    border-color: #6366f1;
-    background: white;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+    border-color: #1967d2;
+    box-shadow: 0 0 0 1px #1967d2;
+  }
+
+  &:hover {
+    border-color: #5f6368;
   }
 `;
 
 const CheckboxGroup = styled.div`
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 12px;
+  margin-bottom: 16px;
 `;
 
 const Checkbox = styled.input`
-  margin-top: 0.125rem;
+  margin-top: 2px;
   flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
 `;
 
 const CheckboxLabel = styled.label`
-  color: #4a5568;
-  font-size: 0.75rem;
-  line-height: 1.4;
+  color: #5f6368;
+  font-size: 14px;
+  line-height: 20px;
   margin: 0;
   cursor: pointer;
+
+  a {
+    color: #1967d2;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 `;
 
 /**
@@ -143,13 +154,15 @@ const CheckboxLabel = styled.label`
  */
 const BackLink = styled.div`
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e8eaed;
   
   a {
-    color: #6366f1;
+    color: #1967d2;
     text-decoration: none;
-    font-weight: 600;
-    font-size: 0.875rem;
+    font-weight: 500;
+    font-size: 14px;
     
     &:hover {
       text-decoration: underline;
@@ -158,15 +171,16 @@ const BackLink = styled.div`
 `;
 
 const WelcomeTitle = styled.h2`
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
+  font-size: 32px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  letter-spacing: 0;
 `;
 
 const WelcomeText = styled.p`
-  font-size: 1rem;
+  font-size: 14px;
+  line-height: 20px;
   opacity: 0.9;
-  line-height: 1.5;
 `;
 
 interface FormData {

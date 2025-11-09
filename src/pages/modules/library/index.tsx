@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { Search, X } from 'lucide-react';
+import { Search, X, Clock, ArrowLeft } from 'lucide-react';
 import LibraryService, { ISchool } from '../../../services/LibraryService';
 import { useAuth } from '../../../contexts/auth';
 
@@ -19,33 +19,63 @@ const LibraryContainer = styled.div`
  * Header with Back Button
  */
 const Header = styled.div`
-  padding: 1rem 2rem;
-  display: flex;
-  align-items: center;
+  padding: 0;
   background: #ffffff;
   border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+`;
+
+const HeaderContent = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 4rem;
+`;
+
+const LogoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const UpdatedInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
 `;
 
 /**
  * Back Button
  */
 const BackButton = styled.button`
-  background: #f8fafc;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
-  padding: 8px 16px;
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
 
   &:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    color: #475569;
+    background: #4338ca;
+    transform: translateX(-2px);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
   }
 `;
 
@@ -314,9 +344,29 @@ const Library: React.FC = () => {
   return (
     <LibraryContainer>
       <Header>
-        <BackButton onClick={handleBackToEcosystem}>
-          ← {isSuperAdmin ? 'Back to Dashboard' : 'Back to Ecosystem'}
-        </BackButton>
+        <HeaderContent>
+          <LogoContainer>
+            <img 
+              src="/luminate-logo.png" 
+              alt="Luminate Logo" 
+              style={{ 
+                width: '120px', 
+                height: 'auto',
+                objectFit: 'contain'
+              }} 
+            />
+          </LogoContainer>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <UpdatedInfo>
+              <Clock size={16} />
+              <span>Updated Daily</span>
+            </UpdatedInfo>
+            <BackButton onClick={handleBackToEcosystem}>
+              <ArrowLeft />
+              Back to Ecosystem
+            </BackButton>
+          </div>
+        </HeaderContent>
       </Header>
 
       <MainContent>
