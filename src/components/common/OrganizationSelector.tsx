@@ -54,7 +54,6 @@ const OrganizationSelector: React.FC<OrganizationSelectorProps> = ({
   if (loading) {
     return (
       <SelectorContainer>
-        <Label>Select Organization</Label>
         <Select disabled>
           <option>Loading organizations...</option>
         </Select>
@@ -65,7 +64,6 @@ const OrganizationSelector: React.FC<OrganizationSelectorProps> = ({
   if (error) {
     return (
       <SelectorContainer>
-        <Label>Select Organization</Label>
         <ErrorMessage>{error}</ErrorMessage>
       </SelectorContainer>
     );
@@ -73,13 +71,14 @@ const OrganizationSelector: React.FC<OrganizationSelectorProps> = ({
 
   return (
     <SelectorContainer>
-      <Label>Select Organization</Label>
       <Select
         value={selectedOrganizationId || ''}
         onChange={handleChange}
         required
       >
-        <option value="">-- Select an organization --</option>
+        <option value="" disabled style={{ color: '#9CA3AF' }}>
+          Select an organization
+        </option>
         {organizations.map((org) => (
           <option key={org.id} value={org.id}>
             {org.name}
@@ -101,38 +100,47 @@ const SelectorContainer = styled.div`
   margin-bottom: 24px;
 `;
 
-const Label = styled.label`
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 8px;
-`;
-
 const Select = styled.select`
   width: 100%;
-  padding: 12px 16px;
-  font-size: 14px;
-  color: #333;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  color: #1f2937;
   background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
   outline: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+
+  /* Style for the placeholder option */
+  option:disabled {
+    color: #9CA3AF;
+  }
+
+  /* When no selection is made, show grey text */
+  &:invalid {
+    color: #9CA3AF;
+  }
+
+  /* When a value is selected, show normal text */
+  &:valid {
+    color: #1f2937;
+  }
 
   &:hover:not(:disabled) {
-    border-color: #1967d2;
+    border-color: #cbd5e1;
   }
 
   &:focus {
-    border-color: #1967d2;
-    box-shadow: 0 0 0 3px rgba(25, 103, 210, 0.1);
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
 
   &:disabled {
-    background-color: #f5f5f5;
+    background-color: #f8fafc;
     cursor: not-allowed;
+    color: #9CA3AF;
   }
 `;
 

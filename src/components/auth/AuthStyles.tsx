@@ -102,6 +102,10 @@ export const Button = styled.button`
   transition: all 0.15s ease;
   font-family: inherit;
   letter-spacing: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   
   &:hover:not(:disabled) {
     background: #1557b0;

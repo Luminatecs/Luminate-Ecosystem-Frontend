@@ -29,12 +29,6 @@ const LoadingSpinner = styled.div`
   }
 `;
 
-const LoadingText = styled.p`
-  color: #718096;
-  margin-top: 1rem;
-  text-align: center;
-`;
-
 /**
  * Protected Route Props Interface
  */
@@ -61,12 +55,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     isAuthenticated, 
     isLoading, 
     user, 
-    hasRole, 
-    hasAnyRole,
-    isSuperAdmin,
-    isOrgAdmin,
-    isOrgWard
-
+    hasAnyRole
   } = useAuth();
   const location = useLocation();
 

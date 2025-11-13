@@ -88,7 +88,7 @@ export interface GridAccordionTableProps {
   // CSV Mode props
   csvMode?: boolean
   csvmodeonmount?: boolean
-  onCsvSave?: (data: any[]) => void
+  onCsvSave?: (data: any[], onProgress?: (current: number, total: number) => void) => void | Promise<void>
 }
 
 // Styled Components
@@ -202,13 +202,6 @@ const SearchIconStyled = styled(SearchIcon)`
   pointer-events: none;
 `
 
-const FilterControls = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-`
-
 const FilterToggle = styled.button<{ active?: boolean }>`
   display: flex;
   align-items: center;
@@ -226,39 +219,6 @@ const FilterToggle = styled.button<{ active?: boolean }>`
   &:hover {
     background: ${(props) => (props.active ? "#5855eb" : "#f8fafc")};
     border-color: ${(props) => (props.active ? "#5855eb" : "#cbd5e1")};
-  }
-`
-
-const ActiveFiltersContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1rem;
-`
-
-const FilterChip = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 20px;
-  font-size: 13px;
-  color: #1e40af;
-  
-  button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #1e40af;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    
-    &:hover {
-      color: #1e3a8a;
-    }
   }
 `
 
@@ -480,18 +440,6 @@ const TableCell = styled.td<{ align?: string }>`
   color: #374151;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
-`
-
-const CellContent = styled.div`
-  display: flex;
-  align-items: center;
-`
-
-const Checkbox = styled.input`
-  cursor: pointer;
-  width: 16px;
-  height: 16px;
-  accent-color: #6366f1;
 `
 
 const AccordionRow = styled.tr`
@@ -962,53 +910,6 @@ const CsvDropZone = styled.div<{ isDragging: boolean }>`
   }
 `
 
-const CsvModeToggle = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  background: #f1f5f9;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-`
-
-const ToggleSwitch = styled.label`
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-`
-
-const ToggleInput = styled.input`
-  opacity: 0;
-  width: 0;
-  height: 0;
-`
-
-const ToggleSlider = styled.span<{ checked: boolean }>`
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: ${props => props.checked ? '#3b82f6' : '#ccc'};
-  transition: .4s;
-  border-radius: 34px;
-  
-  &:before {
-    position: absolute;
-    content: "";
-    height: 26px;
-    width: 26px;
-    left: ${props => props.checked ? '30px' : '4px'};
-    bottom: 4px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-  }
-`
-
 const CsvFileInput = styled.input`
   display: none;
 `
@@ -1139,6 +1040,7 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
   const [csvData, setCsvData] = useState<any[]>([])
   const [csvColumns, setCsvColumns] = useState<Column[]>([])
   const [isDragging, setIsDragging] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -1230,6 +1132,7 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
     onFilter?.(newFilters)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const removeFilter = (column: string, value?: string) => {
     const newFilters = { ...filters }
 
@@ -1268,6 +1171,7 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
     onSelectionChange?.(selectedData)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleRowDoubleClick = (rowIndex: number) => {
     if (!accordion) return
 
@@ -1283,6 +1187,7 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
     onPageChange?.(page)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleColumnDrag = (fromIndex: number, toIndex: number) => {
     const newColumnOrder = [...columnOrder]
     const [movedColumn] = newColumnOrder.splice(fromIndex, 1)
@@ -1290,6 +1195,7 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
     setColumnOrder(newColumnOrder)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const toggleDropdown = (rowIndex: number) => {
     setActiveDropdown(activeDropdown === rowIndex ? null : rowIndex)
   }
@@ -1364,6 +1270,7 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
   }
 
   // Empty state component
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const EmptyState = () => (
     <EmptyStateContainer>
       <EmptyStateIcon>
@@ -1542,20 +1449,40 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
     const lines = csvText.trim().split('\n');
     if (lines.length === 0) return { data: [], columns: [] };
 
-    const headers = lines[0].split(',').map(header => header.trim().replace(/"/g, ''));
-    const parsedColumns: Column[] = headers.map((header, index) => ({
-      key: header.toLowerCase().replace(/\s+/g, '_'),
+    // Parse headers - preserve original casing and format
+    const headers = lines[0].split(',').map(header => header.trim().replace(/^["']|["']$/g, ''));
+    
+    const parsedColumns: Column[] = headers.map((header) => ({
+      key: header, // Use original header as key (preserves camelCase)
       label: header,
       sortable: true,
       filterable: true
     }));
 
     const parsedData = lines.slice(1).map((line, rowIndex) => {
-      const values = line.split(',').map(value => value.trim().replace(/"/g, ''));
+      // Better CSV parsing that handles quoted values with commas
+      const values: string[] = [];
+      let currentValue = '';
+      let insideQuotes = false;
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"' || char === "'") {
+          insideQuotes = !insideQuotes;
+        } else if (char === ',' && !insideQuotes) {
+          values.push(currentValue.trim().replace(/^["']|["']$/g, ''));
+          currentValue = '';
+        } else {
+          currentValue += char;
+        }
+      }
+      // Push the last value
+      values.push(currentValue.trim().replace(/^["']|["']$/g, ''));
+
       const rowData: any = { id: rowIndex + 1 };
       headers.forEach((header, colIndex) => {
-        const key = header.toLowerCase().replace(/\s+/g, '_');
-        rowData[key] = values[colIndex] || '';
+        rowData[header] = values[colIndex] || ''; // Use original header as key
       });
       return rowData;
     });
@@ -1609,8 +1536,68 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
 
   const handleCsvSave = () => {
     if (csvData.length > 0) {
-      onCsvSave(csvData);
-      setHasUnsavedChanges(false);
+      const totalRows = csvData.length;
+      
+      // Show loading state
+      const button = document.querySelector('[data-csv-save-button]') as HTMLButtonElement;
+      if (button) {
+        button.disabled = true;
+        button.textContent = 'Saving 0/' + totalRows + '...';
+      }
+
+      // Progress callback to update button text
+      const onProgress = (current: number, total: number) => {
+        if (button) {
+          button.textContent = `Saving ${current}/${total}...`;
+        }
+      };
+
+      // Call the save callback with progress tracking
+      const result = onCsvSave(csvData, onProgress);
+      
+      // If it returns a promise, handle it
+      if (result instanceof Promise) {
+        result
+          .then(() => {
+            // Success - clear data and show success state
+            setCsvData([]);
+            setCsvColumns([]);
+            setHasUnsavedChanges(false);
+            
+            if (button) {
+              button.disabled = false;
+              button.style.background = '#10b981';
+              button.textContent = 'Saved Successfully!';
+              
+              setTimeout(() => {
+                button.style.background = '';
+                button.textContent = `Save to Database`;
+                setCsvModeActive(false);
+              }, 2000);
+            }
+          })
+          .catch((error) => {
+            // Error - show error state
+            console.error('CSV Save Error:', error);
+            
+            if (button) {
+              button.disabled = false;
+              button.style.background = '#ef4444';
+              button.textContent = 'Save Failed';
+              
+              setTimeout(() => {
+                button.style.background = '';
+                button.textContent = `Save to Database (${totalRows} rows)`;
+              }, 3000);
+            }
+          });
+      } else {
+        // Non-promise result, reset immediately
+        setHasUnsavedChanges(false);
+        if (button) {
+          button.disabled = false;
+        }
+      }
     }
   };
 
@@ -1751,6 +1738,7 @@ const GridAccordionTable: React.FC<GridAccordionTableProps> = ({
             ) : (
               <CsvActions>
                 <CsvSaveButton 
+                  data-csv-save-button
                   onClick={handleCsvSave}
                   disabled={csvData.length === 0}
                 >

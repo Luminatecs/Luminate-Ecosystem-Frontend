@@ -23,9 +23,6 @@ import OrganizationDashboard from './pages/Organization/OrganizationDashboard';
 import SuperAdminDashboard from './pages/admin/SuperAdminDashboard';
 import AdminSettings from './pages/admin/AdminSettings';
 
-// Debug Components (development only)
-import UserRoleDebug from './components/debug/UserRoleDebug';
-
 // Module Pages
 import Library from './pages/modules/library/index';
 import SearchResults from './pages/modules/library/SearchResults';

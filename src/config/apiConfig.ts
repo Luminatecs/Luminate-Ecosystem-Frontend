@@ -4,7 +4,7 @@
  */
 
 const API_CONFIG = {
-  API_BASE_URL: 'http://localhost:3002/api',
+  API_BASE_URL: '/api',
   NETWORK_TIMEOUT: 30000, // 30 seconds
 };
 

@@ -225,10 +225,30 @@ const WelcomeButton = styled(Button)`
   }
 `;
 
+const Spinner = styled.div`
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+`;
+
+const CheckIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<LoginDto>({
     username: '',
@@ -296,6 +316,10 @@ const LoginPage: React.FC = () => {
           
           Logger.info('LoginPage - Temp login complete, redirecting to ecosystem');
           
+          // Show success state for 800ms before navigating
+          setLoginSuccess(true);
+          await new Promise(resolve => setTimeout(resolve, 800));
+          
           // Full page reload to /ecosystem - AuthContext will initialize from secure storage
           // and the password change modal will appear due to sessionStorage flags
           window.location.href = '/ecosystem';
@@ -309,6 +333,10 @@ const LoginPage: React.FC = () => {
         const user = await login(formData.username, formData.password);
         if (user) {
           Logger.success('LoginPage - Login successful', user);
+          
+          // Show success state for 800ms before navigating
+          setLoginSuccess(true);
+          await new Promise(resolve => setTimeout(resolve, 800));
           
           // Navigate based on user role and setup status
           if (user.role === 'SUPER_ADMIN') {
@@ -405,8 +433,28 @@ const LoginPage: React.FC = () => {
                 </ForgotPasswordLink>
               </FormGroup>
               
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Signing in...' : 'Sign In'}
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                style={{
+                  background: loginSuccess 
+                    ? 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)' 
+                    : undefined
+                }}
+              >
+                {isSubmitting && !loginSuccess && (
+                  <>
+                    <Spinner />
+                    <span>Signing in...</span>
+                  </>
+                )}
+                {loginSuccess && (
+                  <>
+                    <CheckIcon />
+                    <span>Success!</span>
+                  </>
+                )}
+                {!isSubmitting && !loginSuccess && 'Sign In'}
               </Button>
             </Form>
       

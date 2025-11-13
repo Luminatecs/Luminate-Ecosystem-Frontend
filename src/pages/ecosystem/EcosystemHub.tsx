@@ -97,6 +97,38 @@ const HomeButton = styled.button`
 `;
 
 /**
+ * Org Ward Badge - Upper right corner
+ */
+const OrgWardBadge = styled.div`
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(72, 187, 120, 0.4);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+`;
+
+/**
  * Ornamental Center Hub - No click functionality
  */
 const CenterHub = styled.div`
@@ -390,7 +422,7 @@ const modules: Module[] = [
 const EcosystemHub: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [activeModule, setActiveModule] = useState<Module | null>(null);
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -490,6 +522,18 @@ const EcosystemHub: React.FC = () => {
           />
         </svg>
       </HomeButton>
+
+      {/* Org Ward Badge - Show only for org ward users */}
+      {user?.isOrgWard && (
+        <OrgWardBadge>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+            />
+          </svg>
+          Org Ward
+        </OrgWardBadge>
+      )}
 
       <HubContainer>
         {/* Ornamental Center Hub */}

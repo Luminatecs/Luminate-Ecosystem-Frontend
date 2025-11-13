@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { EducationLevel } from '../../models';
-import Button, { ButtonState } from '../../components/ui/Button';
 import AuthService from '../../services/auth/AuthService';
 import GridAccordionTable from '../../Gridnpm';
 import { useAuth } from '../../contexts/auth/AuthContext';
@@ -187,6 +186,19 @@ const SuccessMessage = styled.div`
   gap: 8px;
 `;
 
+const ErrorContainer = styled.div`
+  padding: 12px 16px;
+  background: #fce8e6;
+  border-left: 4px solid #d93025;
+  border-radius: 4px;
+  color: #c5221f;
+  font-size: 14px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
 const ErrorAlert = styled.div`
   padding: 12px 16px;
   background: #fce8e6;
@@ -306,7 +318,6 @@ const StudentManagement: React.FC = () => {
 
   // Bulk Upload State
   const [students, setStudents] = useState<Student[]>([]);
-  const [bulkButtonState, setBulkButtonState] = useState(ButtonState.IDLE);
 
   // Single Entry Handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -405,7 +416,17 @@ const StudentManagement: React.FC = () => {
   };
 
   // Bulk Upload Handlers
-  const handleCsvImport = async (csvData: any[]) => {
+  const handleCsvSave = async (csvData: any[], onProgress?: (current: number, total: number) => void) => {
+    // Validate organization selection first
+    if (isSuperOrAccessAdmin && !selectedOrganizationId) {
+      setErrorMessage('Please select an organization first');
+      setTimeout(() => {
+        setErrorMessage('');
+      }, 3000);
+      throw new Error('Please select an organization first');
+    }
+
+    // Map and validate CSV data
     const mappedStudents: Student[] = csvData.map((row, index) => ({
       id: `csv-${index}`,
       guardianName: row.guardianName || row.GuardianName || row.guardian_name || '',
@@ -414,55 +435,73 @@ const StudentManagement: React.FC = () => {
       educationLevel: (row.educationLevel || row.EducationLevel || row.education_level || EducationLevel.UNIVERSITY) as EducationLevel
     }));
 
-    setStudents(mappedStudents);
-  };
-
-  const handleSaveStudents = async () => {
-    if (students.length === 0) return;
-
-    if (isSuperOrAccessAdmin && !selectedOrganizationId) {
-      setBulkButtonState(ButtonState.ERROR);
-      setErrorMessage('Please select an organization first');
-      setTimeout(() => {
-        setBulkButtonState(ButtonState.IDLE);
-      }, 3000);
-      return;
+    // Validate mapped data
+    if (mappedStudents.length === 0) {
+      throw new Error('No valid student data found in CSV');
     }
 
-    setBulkButtonState(ButtonState.LOADING);
+    // Create wards one by one with progress tracking
+    let successCount = 0;
+    let failureCount = 0;
+    const errors: string[] = [];
 
-    try {
-      const wardsData = students.map(student => ({
-        guardianName: student.guardianName,
-        guardianEmail: student.guardianEmail,
-        wardName: student.wardName,
-        educationLevel: student.educationLevel
-      }));
-
-      const response = await AuthService.createWardsBulk({ 
-        wards: wardsData,
-        ...(isSuperOrAccessAdmin && selectedOrganizationId ? { organizationId: selectedOrganizationId } : {})
-      });
+    for (let i = 0; i < mappedStudents.length; i++) {
+      const student = mappedStudents[i];
       
-      if (response.success) {
-        setBulkButtonState(ButtonState.SUCCESS);
-        setStudents([]);
-        
-        setTimeout(() => {
-          setBulkButtonState(ButtonState.IDLE);
-        }, 2000);
-      } else {
-        throw new Error(response.message || 'Failed to create wards');
+      // Update progress
+      if (onProgress) {
+        onProgress(i + 1, mappedStudents.length);
       }
 
-    } catch (error) {
-      setBulkButtonState(ButtonState.ERROR);
-      console.error('Error creating wards:', error);
-      
-      setTimeout(() => {
-        setBulkButtonState(ButtonState.IDLE);
-      }, 3000);
+      try {
+        // Prepare single ward data
+        const wardData = {
+          guardianName: student.guardianName,
+          guardianEmail: student.guardianEmail,
+          wardName: student.wardName,
+          educationLevel: student.educationLevel,
+          ...(isSuperOrAccessAdmin && selectedOrganizationId ? { organizationId: selectedOrganizationId } : {})
+        };
+
+        const response = await AuthService.createWard(wardData);
+        
+        if (response.success) {
+          successCount++;
+          console.log(`✅ Ward ${i + 1}/${mappedStudents.length} created:`, student.wardName);
+        } else {
+          failureCount++;
+          errors.push(`${student.wardName}: ${response.message || 'Failed to create'}`);
+          console.error(`❌ Ward ${i + 1}/${mappedStudents.length} failed:`, student.wardName);
+        }
+      } catch (error) {
+        failureCount++;
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        errors.push(`${student.wardName}: ${message}`);
+        console.error(`❌ Ward ${i + 1}/${mappedStudents.length} error:`, error);
+      }
+
+      // Small delay between requests (backend will add additional delay)
+      if (i < mappedStudents.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
     }
+
+    // Show results
+    if (successCount === mappedStudents.length) {
+      setSuccessMessage(`🎉 Successfully imported all ${successCount} students!`);
+      setStudents([]);
+    } else if (successCount > 0) {
+      setSuccessMessage(`⚠️ Imported ${successCount} of ${mappedStudents.length} students`);
+      setErrorMessage(`Failed to import ${failureCount} students. Check console for details.`);
+      console.error('Import errors:', errors);
+    } else {
+      throw new Error('Failed to import any students. Check console for details.');
+    }
+
+    setTimeout(() => {
+      setSuccessMessage('');
+      setErrorMessage('');
+    }, 5000);
   };
 
   return (
@@ -607,6 +646,20 @@ const StudentManagement: React.FC = () => {
                 />
               </div>
             )}
+
+            {errorMessage && (
+              <ErrorContainer>
+                <span>⚠</span>
+                <span>{errorMessage}</span>
+              </ErrorContainer>
+            )}
+
+            {successMessage && (
+              <SuccessMessage>
+                <span>✓</span>
+                <span>{successMessage}</span>
+              </SuccessMessage>
+            )}
             
             <GridAccordionTable
               columns={[]}
@@ -615,24 +668,9 @@ const StudentManagement: React.FC = () => {
               searchable={true}
               filterable={true}
               csvMode={true}
-              onCsvSave={handleCsvImport}
+              onCsvSave={handleCsvSave}
               csvmodeonmount={true} 
             />
-
-            {students.length > 0 && (
-              <div style={{ marginTop: '24px' }}>
-                <Button
-                  onClick={handleSaveStudents}
-                  state={bulkButtonState}
-                  backgroundColor="#1967d2"
-                  successText="Students imported successfully!"
-                  errorText="Failed to import students. Please try again."
-                  fullWidth
-                >
-                  Save Imported Students ({students.length})
-                </Button>
-              </div>
-            )}
           </BulkUploadSection>
         )}
       </TabContent>

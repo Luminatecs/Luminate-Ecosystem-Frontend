@@ -122,7 +122,8 @@ const ErrorAlert = styled.div`
 const ButtonGroup = styled.div`
   display: flex;
   gap: 0.75rem;
-  margin-top: 0.5rem;
+  margin-top: 1.5rem;
+  justify-content: flex-end;
 
   @media (max-width: 768px) {
     flex-direction: column;
