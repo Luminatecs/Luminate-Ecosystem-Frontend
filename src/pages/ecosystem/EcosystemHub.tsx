@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/auth';
 import { ChangePasswordModal } from '../../components/auth/ChangePasswordModal';
 
@@ -93,38 +93,6 @@ const HomeButton = styled.button`
   svg {
     width: 24px;
     height: 24px;
-  }
-`;
-
-/**
- * Org Ward Badge - Upper right corner
- */
-const OrgWardBadge = styled.div`
-  position: fixed;
-  top: 2rem;
-  right: 2rem;
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  color: white;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
-  z-index: 1001;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(72, 187, 120, 0.4);
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
   }
 `;
 
@@ -421,26 +389,21 @@ const modules: Module[] = [
 
 const EcosystemHub: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const [activeModule, setActiveModule] = useState<Module | null>(null);
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-  // Check if user needs to change password (logged in with temp code or from navigation state)
+  // Check if user needs to change password (logged in with temp code)
   useEffect(() => {
     const needsPasswordChange = sessionStorage.getItem('needsPasswordChange');
-    const stateShowModal = (location.state as any)?.showPasswordChangeModal;
-    
-    if (needsPasswordChange === 'true' || stateShowModal) {
+    if (needsPasswordChange === 'true') {
       setShowPasswordModal(true);
-      
-      // Clear the navigation state to prevent modal from showing again on refresh
-      if (stateShowModal) {
-        navigate(location.pathname, { replace: true, state: {} });
-      }
     }
-  }, [location, navigate]);
+  }, []);
+
+  // Determine if we're in development mode
+  // const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
 
   const handleModuleHover = (module: Module, event: React.MouseEvent) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -472,24 +435,17 @@ const EcosystemHub: React.FC = () => {
   };
 
   const handleModuleClick = (module: Module) => {
-    console.log(`Navigating to ${module.name}:`, {
-      moduleId: module.id
-    });
+    // Choose URL based on environment
+    // const targetUrl = isDevelopment ? module.localUrl : module.productionUrl;
+    const targetUrl = module.productionUrl;
+    
+    // console.log(`Navigating to ${module.name}:`, {
+    //   environment: isDevelopment ? 'development' : 'production',
+    //   url: targetUrl
+    // });
 
-    // Navigate to internal pages based on module ID
-    switch (module.id) {
-      case 'resources':
-        navigate('/resources');
-        break;
-      case 'library':
-        navigate('/library');
-        break;
-      case 'kaeval':
-        navigate('/kaeval');
-        break;
-      default:
-        console.warn(`No route defined for module: ${module.id}`);
-    }
+    // Open external application in new tab/window
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleLogout = async () => {
@@ -522,18 +478,6 @@ const EcosystemHub: React.FC = () => {
           />
         </svg>
       </HomeButton>
-
-      {/* Org Ward Badge - Show only for org ward users */}
-      {user?.isOrgWard && (
-        <OrgWardBadge>
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-            />
-          </svg>
-          Org Ward
-        </OrgWardBadge>
-      )}
 
       <HubContainer>
         {/* Ornamental Center Hub */}
