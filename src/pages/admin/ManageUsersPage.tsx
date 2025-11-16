@@ -27,10 +27,47 @@ const Header = styled.div`
   justify-content: center;
   margin-bottom: 48px;
   padding: 32px 24px;
+  position: relative;
 
   @media (max-width: 768px) {
     padding: 24px 16px;
     margin-bottom: 32px;
+  }
+`;
+
+/**
+ * Show All Button - Top left of header
+ */
+const ShowAllButton = styled.button`
+  position: absolute;
+  top: 32px;
+  left: 24px;
+  padding: 10px 20px;
+  background: #1967d2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: #1557b0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  @media (max-width: 768px) {
+    position: static;
+    margin-bottom: 16px;
   }
 `;
 
@@ -502,6 +539,63 @@ const EmptyText = styled.p`
 `;
 
 /**
+ * Pagination Controls
+ */
+const PaginationContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid #e8eaed;
+  background: white;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+  }
+`;
+
+const PaginationInfo = styled.div`
+  font-size: 14px;
+  color: #5f6368;
+`;
+
+const PaginationControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const PageButton = styled.button<{ active?: boolean }>`
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 4px;
+  border: 1px solid ${props => props.active ? '#1967d2' : '#dadce0'};
+  background: ${props => props.active ? '#1967d2' : 'white'};
+  color: ${props => props.active ? 'white' : '#202124'};
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover:not(:disabled) {
+    background: ${props => props.active ? '#1557b0' : '#f1f3f4'};
+    border-color: ${props => props.active ? '#1557b0' : '#dadce0'};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+/**
  * Manage Users Page Component
  */
 const ManageUsersPage: React.FC = () => {
@@ -514,17 +608,34 @@ const ManageUsersPage: React.FC = () => {
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editedRole, setEditedRole] = useState<UserRole | ''>('');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isShowingAll, setIsShowingAll] = useState(false);
 
-  // Fetch all users on initial load
-  const fetchUsers = useCallback(async () => {
+  // Fetch all users with pagination
+  const fetchUsers = useCallback(async (page: number = 1, limit: number = 20) => {
     try {
       setLoading(true);
-      const response = await UserService.getUsers();
+      console.log(`📄 Fetching users - Page: ${page}, Limit: ${limit}`);
+      
+      const response = await UserService.getUsers(page, limit);
 
       if (response.success && response.data) {
         const users = response.data.users || [];
+        const pagination = response.data.pagination;
+        
+        console.log(`✅ Fetched ${users.length} users (Total: ${pagination?.total || 0})`);
+        
         setUsers(users);
         setFilteredUsers(users);
+        setTotalUsers(pagination?.total || 0);
+        setTotalPages(pagination?.totalPages || 0);
+        setIsShowingAll(true);
+        setSearchQuery(''); // Clear search when showing all
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -534,19 +645,37 @@ const ManageUsersPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    fetchUsers(currentPage, itemsPerPage);
+  }, [fetchUsers, currentPage, itemsPerPage]);
+
+  // Handle Show All button click
+  const handleShowAll = () => {
+    setCurrentPage(1);
+    setSearchQuery('');
+    setIsShowingAll(true);
+    fetchUsers(1, itemsPerPage);
+  };
+
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    if (isShowingAll) {
+      fetchUsers(newPage, itemsPerPage);
+    }
+  };
 
   // Search users with backend
   const searchUsers = useCallback(async (query: string) => {
     if (!query.trim()) {
-      console.log('🔍 Search query empty, showing all users');
-      setFilteredUsers(users);
+      console.log('🔍 Search query empty, fetching all users');
+      setIsShowingAll(true);
+      fetchUsers(1, itemsPerPage);
       return;
     }
 
     try {
       setSearching(true);
+      setIsShowingAll(false); // Disable pagination during search
       console.log('🔍 Searching backend with query:', query);
       
       const response = await UserService.searchUsers(query.trim());
@@ -557,6 +686,7 @@ const ManageUsersPage: React.FC = () => {
         const foundUsers = response.data.users || [];
         console.log(`✅ Found ${foundUsers.length} users`);
         setFilteredUsers(foundUsers);
+        setTotalUsers(foundUsers.length);
       } else {
         console.warn('⚠️ Search returned no data, falling back to client-side');
         // Fallback to client-side search
@@ -567,6 +697,7 @@ const ManageUsersPage: React.FC = () => {
           user.role?.toLowerCase().includes(query.toLowerCase())
         );
         setFilteredUsers(filtered);
+        setTotalUsers(filtered.length);
       }
     } catch (error: any) {
       console.error('❌ Error searching users:', error);
@@ -586,10 +717,11 @@ const ManageUsersPage: React.FC = () => {
       );
       console.log('🔍 Client-side filtered results:', filtered.length);
       setFilteredUsers(filtered);
+      setTotalUsers(filtered.length);
     } finally {
       setSearching(false);
     }
-  }, [users]);
+  }, [users, fetchUsers, itemsPerPage]);
 
   // Debounce search
   useEffect(() => {
@@ -637,7 +769,7 @@ const ManageUsersPage: React.FC = () => {
       if (response.success) {
         console.log('✅ Role updated successfully:', response);
         // Refresh users list
-        await fetchUsers();
+        await fetchUsers(currentPage, itemsPerPage);
         handleClosePanel();
       }
     } catch (error: any) {
@@ -649,6 +781,12 @@ const ManageUsersPage: React.FC = () => {
   return (
     <Container>
       <Header>
+        <ShowAllButton onClick={handleShowAll}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 12h18M3 6h18M3 18h18" />
+          </svg>
+          Show All Users
+        </ShowAllButton>
         <Title>Manage User Access</Title>
         <SearchBar>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -778,6 +916,57 @@ const ManageUsersPage: React.FC = () => {
               ))}
             </tbody>
           </Table>
+        )}
+        
+        {/* Pagination Controls - Only show when showing all users */}
+        {isShowingAll && !loading && filteredUsers.length > 0 && (
+          <PaginationContainer>
+            <PaginationInfo>
+              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalUsers)} of {totalUsers} users
+            </PaginationInfo>
+            <PaginationControls>
+              <PageButton
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </PageButton>
+              
+              {/* Page Numbers */}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <PageButton
+                    key={pageNum}
+                    active={currentPage === pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                  >
+                    {pageNum}
+                  </PageButton>
+                );
+              })}
+              
+              <PageButton
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </PageButton>
+            </PaginationControls>
+          </PaginationContainer>
         )}
       </TableContainer>
 

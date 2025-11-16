@@ -26,18 +26,28 @@ export interface User {
 // Paginated response
 export interface PaginatedUsersResponse {
   users: User[];
-  total: number;
+  total?: number;
   page?: number;
   limit?: number;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
 }
 
 class UserServiceClass {
   /**
-   * Get all users
+   * Get all users with pagination
    */
-  async getUsers(): Promise<UserApiResponse<PaginatedUsersResponse>> {
+  async getUsers(page: number = 1, limit: number = 20): Promise<UserApiResponse<PaginatedUsersResponse>> {
     try {
-      const response = await apiClient.get<UserApiResponse<PaginatedUsersResponse>>('/users');
+      const response = await apiClient.get<UserApiResponse<PaginatedUsersResponse>>(
+        `/users?page=${page}&limit=${limit}`
+      );
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Failed to fetch users');
