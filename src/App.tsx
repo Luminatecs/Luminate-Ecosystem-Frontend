@@ -30,6 +30,9 @@ import Kaeval from './pages/modules/kaeval/index';
 import Resources from './pages/modules/resources/index';
 import ResourceDetail from './pages/modules/resources/resourcesDetails';
 
+// Documentation Pages
+import DocumentationPage from './pages/Documentation/DocumentationPage';
+
 /**
  * Main Application Component
  * SECURITY: Comprehensive routing with JWT-based authentication
@@ -58,6 +61,10 @@ function App() {
             {/* Password Reset Routes - Public */}
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            
+            {/* Public Documentation Route */}
+            <Route path="/docs" element={<DocumentationPage />} />
+            <Route path="/documentation" element={<DocumentationPage />} />
 
             {/* Protected Routes - Require JWT Authentication */}
             
