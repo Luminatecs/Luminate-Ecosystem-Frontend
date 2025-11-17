@@ -21,7 +21,7 @@ import { LoginDto } from '../../models';
 
 const LoginContainer = styled.div`
   display: flex;
-  background: #44bbcb;
+  background: #3aadbd;
   /* border-radius: 16px; */
   /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); */
   overflow: hidden;
@@ -36,7 +36,7 @@ const LoginContainer = styled.div`
     top: 0;
     left: 0;
     right: 0;
-    height: 6px;
+    height: 4px;
     background: linear-gradient(90deg, #4299e1 0%, #2c5282 100%);
   }
 
@@ -55,12 +55,12 @@ const LoginFormSection = styled.div`
   justify-content: center;
 
   @media (max-width: 768px) {
-    padding: 2rem 1.5rem;
+    padding: 1rem 1rem;
     order: 2;
   }
 
   @media (max-width: 480px) {
-    padding: 1.5rem 1rem;
+    padding: 1rem 1rem;
   }
 `;
 
@@ -84,7 +84,7 @@ const WelcomeSection = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(243, 254, 255, 0.1);
+    background: rgba(26, 35, 50, 0.7);
   }
 
   @media (max-width: 768px) {
@@ -96,7 +96,7 @@ const WelcomeSection = styled.div`
   }
 
   @media (max-width: 480px) {
-    min-height: 250px;
+    min-height: 275px;
     padding: 1.5rem 1rem;
     background-size: 90% 90%;
   }
@@ -108,7 +108,8 @@ const WelcomeTitle = styled.h1`
   margin-bottom: 1rem;
   position: relative;
   z-index: 1;
-  color: #47C2D2;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 
   @media (max-width: 768px) {
     font-size: 2rem;
@@ -123,12 +124,13 @@ const WelcomeTitle = styled.h1`
 
 const WelcomeText = styled.p`
   font-size: 1.1rem;
-  opacity: 0.9;
+  opacity: 0.95;
   line-height: 1.6;
   position: relative;
   z-index: 1;
   margin-bottom: 2rem;
-  color: #47C2D2;
+  color: #f7fafc;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 
   @media (max-width: 768px) {
     font-size: 1rem;
@@ -200,18 +202,22 @@ const ForgotPasswordLink = styled(Link)`
 
 const WelcomeButton = styled(Button)`
   background: transparent;
-  border: 2px solid #47C2D2;
-  color: #1d7f8b;
+  border: 2px solid #ffffff;
+  color: #ffffff;
   width: auto;
   padding: 0.875rem 2.5rem;
   z-index: 1;
+  position: relative;
+  text-shadow: none;
+  font-weight: 600;
   
-  &:hover {
-    background: #47C2D2;
-    color: white;
-    border-color: #47C2D2;
-    /* transform: translateY(-1px);
-    cursor: pointer; */
+  &:hover:not(:disabled) {
+    background: #ffffff !important;
+    color: #1a2332 !important;
+    border-color: #ffffff;
+    transform: translateY(-1px);
+    cursor: pointer;
+    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
   }
 
   @media (max-width: 768px) {
@@ -222,6 +228,31 @@ const WelcomeButton = styled(Button)`
   @media (max-width: 480px) {
     padding: 0.65rem 1.75rem;
     font-size: 0.9rem;
+  }
+`;
+
+const LuminateIcon = styled.div`
+  position: absolute;
+  bottom: -2rem;
+  left: 0.4rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0.9;
+  
+  img {
+    width: 125px;
+    height: 125px;
+    object-fit: contain;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+
+  @media (max-width: 480px) {
+    display: none;
   }
 `;
 
@@ -377,6 +408,9 @@ const LoginPage: React.FC = () => {
           <WelcomeButton onClick={() => navigate('/register')}>
             Create Account
           </WelcomeButton>
+          <LuminateIcon>
+            <img src="/luminate-logo.png" alt="Luminate" />
+          </LuminateIcon>
         </WelcomeSection>
         
         <LoginFormSection>

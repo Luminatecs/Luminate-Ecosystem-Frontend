@@ -7,13 +7,13 @@ import { ChangePasswordModal } from '../../components/auth/ChangePasswordModal';
 // Animation keyframes
 const glowPulse = keyframes`
   0% {
-    box-shadow: 0 0 30px rgba(66, 153, 225, 0.3);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
   }
   50% {
-    box-shadow: 0 0 60px rgba(66, 153, 225, 0.5);
+    box-shadow: 0 0 60px rgba(255, 255, 255, 0.5);
   }
   100% {
-    box-shadow: 0 0 30px rgba(66, 153, 225, 0.3);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
   }
 `;
 
@@ -29,12 +29,17 @@ const orbitRotate = keyframes`
 // Styled Components
 const Container = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+  background: linear-gradient(135deg, #1a2332 0%, #2c5282 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
+  padding: 20px;
+  
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
   
   &::before {
     content: '';
@@ -43,7 +48,8 @@ const Container = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(ellipse at center, rgba(66, 153, 225, 0.08) 0%, transparent 70%);
+    background: url('data:image/svg+xml,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+    opacity: 0.3;
   }
 
   &::after {
@@ -53,7 +59,7 @@ const Container = styled.div`
     left: 20%;
     right: 20%;
     bottom: 20%;
-    border: 1px solid rgba(66, 153, 225, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 50%;
     animation: ${orbitRotate} 60s linear infinite;
   }
@@ -68,8 +74,9 @@ const HomeButton = styled.button`
   left: 2rem;
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, #4299e1 0%, #2c5282 100%);
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   color: white;
   cursor: pointer;
@@ -78,12 +85,10 @@ const HomeButton = styled.button`
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1001;
-  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
 
   &:hover {
+    background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(66, 153, 225, 0.4);
-    background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
   }
 
   &:active {
@@ -102,12 +107,13 @@ const HomeButton = styled.button`
 const CenterHub = styled.div`
   width: 180px;
   height: 180px;
-  background: linear-gradient(135deg, #2c5282 0%, #4299e1 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.95) 100%);
+  border: 3px solid rgba(255, 255, 255, 0.4);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #1a2332;
   font-size: 1.1rem;
   font-weight: 700;
   position: relative;
@@ -116,6 +122,11 @@ const CenterHub = styled.div`
   text-align: center;
   line-height: 1.3;
   letter-spacing: -0.5px;
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 8px 32px rgba(255, 255, 255, 0.2),
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
   
   &::before {
     content: '';
@@ -124,7 +135,7 @@ const CenterHub = styled.div`
     left: -15px;
     right: -15px;
     bottom: -15px;
-    border: 2px solid rgba(66, 153, 225, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
     animation: ${orbitRotate} 30s linear infinite;
   }
@@ -136,7 +147,7 @@ const CenterHub = styled.div`
     left: -25px;
     right: -25px;
     bottom: -25px;
-    border: 1px solid rgba(66, 153, 225, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     animation: ${orbitRotate} 45s linear infinite reverse;
   }
@@ -152,6 +163,16 @@ const HubContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  @media (max-width: 768px) {
+    width: 350px;
+    height: 350px;
+  }
+  
+  @media (max-width: 480px) {
+    width: 300px;
+    height: 300px;
+  }
 `;
 
 /**
@@ -177,8 +198,22 @@ const ModuleItem = styled.div<{ angle: number; distance?: number }>`
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 3;
   
-  &:hover {
-    transform: translate(-50%, -50%) rotate(${props => props.angle}deg) translateX(${props => (props.distance || 250) + 20}px) rotate(-${props => props.angle}deg) scale(1.15);
+  @media (max-width: 768px) {
+    transform: translate(-50%, -50%) rotate(${props => props.angle}deg) translateX(180px) rotate(-${props => props.angle}deg);
+    pointer-events: none;
+    cursor: default;
+  }
+  
+  @media (max-width: 480px) {
+    transform: translate(-50%, -50%) rotate(${props => props.angle}deg) translateX(160px) rotate(-${props => props.angle}deg);
+    pointer-events: none;
+    cursor: default;
+  }
+  
+  @media (min-width: 769px) {
+    &:hover {
+      transform: translate(-50%, -50%) rotate(${props => props.angle}deg) translateX(${props => (props.distance || 250) + 20}px) rotate(-${props => props.angle}deg) scale(1.15);
+    }
   }
 `;
 
@@ -189,28 +224,41 @@ const ModuleCircle = styled.div`
   width: 100px;
   height: 100px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
-  border: 3px solid rgba(66, 153, 225, 0.2);
+  border: 3px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(10px);
   box-shadow: 
-    0 8px 20px rgba(0, 0, 0, 0.1),
-    0 4px 8px rgba(66, 153, 225, 0.1),
+    0 8px 20px rgba(255, 255, 255, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  @media (max-width: 768px) {
+    width: 80px;
+    height: 80px;
+  }
+  
+  @media (max-width: 480px) {
+    width: 70px;
+    height: 70px;
+  }
 
-  &:hover {
-    background: linear-gradient(135deg, #4299e1 0%, #2c5282 100%);
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 
-      0 12px 30px rgba(66, 153, 225, 0.2),
-      0 6px 12px rgba(0, 0, 0, 0.15);
+  @media (min-width: 769px) {
+    &:hover {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.95) 100%);
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 
+        0 12px 30px rgba(255, 255, 255, 0.2),
+        0 6px 12px rgba(0, 0, 0, 0.15);
+      transform: scale(1.05);
 
-    .module-name {
-      color: white;
-      font-weight: 700;
+      .module-name {
+        color: #1a2332;
+        font-weight: 700;
+      }
     }
   }
 `;
@@ -219,7 +267,7 @@ const ModuleCircle = styled.div`
  * Module Name
  */
 const ModuleName = styled.span`
-  color: #2d3748;
+  color: #2c5282;
   font-weight: 600;
   font-size: 0.95rem;
   text-align: center;
@@ -235,16 +283,17 @@ const HoverModal = styled.div<{ isVisible: boolean; position: { x: number; y: nu
   top: ${props => props.position.y}px;
   left: ${props => props.position.x}px;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.95);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(66, 153, 225, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 16px;
   padding: 0;
   min-width: 350px;
   max-width: 450px;
   box-shadow: 
-    0 15px 35px rgba(0, 0, 0, 0.1),
-    0 6px 15px rgba(66, 153, 225, 0.1);
+    0 20px 40px rgba(0, 0, 0, 0.15),
+    0 8px 20px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   opacity: ${props => props.isVisible ? 1 : 0};
   visibility: ${props => props.isVisible ? 'visible' : 'hidden'};
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -260,7 +309,7 @@ const HoverModal = styled.div<{ isVisible: boolean; position: { x: number; y: nu
     left: -1px;
     right: -1px;
     bottom: -1px;
-    background: linear-gradient(135deg, rgba(66, 153, 225, 0.1) 0%, transparent 50%, rgba(44, 82, 130, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
     border-radius: 16px;
     z-index: -1;
   }
@@ -272,18 +321,7 @@ const HoverModal = styled.div<{ isVisible: boolean; position: { x: number; y: nu
 const ModalImage = styled.div<{ moduleId: string }>`
   width: 100%;
   height: 120px;
-  background: ${props => {
-    switch(props.moduleId) {
-      case 'kaeval':
-        return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-      case 'library':
-        return 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
-      case 'resources':
-        return 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
-      default:
-        return 'linear-gradient(135deg, #4299e1 0%, #2c5282 100%)';
-    }
-  }};
+  background: linear-gradient(135deg, #1a2332 0%, #2c5282 100%);
   border-radius: 16px 16px 0 0;
   display: flex;
   align-items: center;
@@ -300,26 +338,14 @@ const ModalImage = styled.div<{ moduleId: string }>`
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   &::after {
-    content: '';
+    content: '📊';
     font-size: 3rem;
     z-index: 1;
     position: relative;
-  }
-  
-  &[data-module="kaeval"]::after {
-    content: '📊';
-  }
-  
-  &[data-module="library"]::after {
-    content: '📚';
-  }
-  
-  &[data-module="resources"]::after {
-    content: '🎯';
   }
 `;
 
@@ -337,7 +363,7 @@ const ModalTitle = styled.h3`
   font-size: 1.2rem;
   font-weight: 700;
   margin: 0 0 0.75rem;
-  background: linear-gradient(90deg, #2c5282 0%, #4299e1 100%);
+  background: linear-gradient(90deg, #1a2332 0%, #2c5282 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -345,7 +371,7 @@ const ModalTitle = styled.h3`
 `;
 
 const ModalDescription = styled.p`
-  color: #64748b;
+  color: #475569;
   line-height: 1.5;
   margin: 0;
   font-size: 0.95rem;

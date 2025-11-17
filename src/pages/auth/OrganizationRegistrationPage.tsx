@@ -64,7 +64,7 @@ const FormSection = styled.div`
  */
 const WelcomeSection = styled.div`
   flex: 0.8;
-  background: linear-gradient(135deg, #1967d2 0%, #1557b0 100%);
+  background: linear-gradient(135deg, #1a2332 0%, #2c5282 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -74,6 +74,16 @@ const WelcomeSection = styled.div`
   text-align: center;
   position: relative;
   overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(26, 35, 50, 0.1);
+  }
 
   @media (max-width: 768px) {
     flex: none;
@@ -109,6 +119,15 @@ const Form = styled.form`
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const CheckboxGroup = styled.div`
@@ -145,9 +164,9 @@ const CheckboxLabel = styled.label`
 
 const SubmitButton = styled.button`
   width: 100%;
-  background: #1967d2;
+  background: linear-gradient(135deg, #a5491a 0%, #F4824B 50%);
   color: white;
-  padding: 10px 24px;
+  padding: 1rem 1.5rem;
   border: none;
   border-radius: 4px;
   font-size: 14px;
@@ -155,10 +174,15 @@ const SubmitButton = styled.button`
   cursor: pointer;
   transition: all 0.15s ease;
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 
   &:hover:not(:disabled) {
-    background: #1557b0;
+    background: linear-gradient(135deg, #1a2332 0%, #2c5282 100%);
     box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+    transform: translateY(-1px);
   }
 
   &:disabled {
@@ -435,14 +459,13 @@ const OrganizationRegistrationPage: React.FC = () => {
             </CheckboxGroup>
             {validationErrors.termsAccepted && <ErrorMessage>{validationErrors.termsAccepted}</ErrorMessage>}
 
+            {validationErrors.submit && (
+              <ErrorMessage style={{ marginBottom: '16px' }}>{validationErrors.submit}</ErrorMessage>
+            )}
+
             <SubmitButton type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Creating Account...' : 'Create Admin Account'}
             </SubmitButton>
-           
-           
-           {validationErrors.submit && (
-              <ErrorMessage>{validationErrors.submit}</ErrorMessage>
-            )}
 
           </Form>
 

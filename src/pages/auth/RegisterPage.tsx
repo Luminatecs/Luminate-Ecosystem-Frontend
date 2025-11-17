@@ -172,6 +172,34 @@ const BackLink = styled(Link)`
   }
 `;
 
+const LegalFooter = styled.div`
+  text-align: center;
+  padding-top: 16px;
+  margin-top: 16px;
+`;
+
+const LegalLinks = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 12px;
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 8px;
+  }
+`;
+
+const LegalLink = styled(Link)`
+  color: #5f6368;
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: underline;
+    color: #1967d2;
+  }
+`;
+
 /**
  * Registration Selection Page Component
  * SECURITY: Provides role-based registration paths
@@ -215,21 +243,16 @@ const RegisterPage: React.FC = () => {
           </OptionCard>
         </OptionsGrid>
 
-        <TokenSection>
-          <TokenTitle>Have a Registration Token?</TokenTitle>
-          <TokenDescription>
-            If your school or institution provided you with a registration token, 
-            use it to join under their organization
-          </TokenDescription>
-          <TokenButton to="/register/token">
-            Register with Token
-          </TokenButton>
-        </TokenSection>
-
         <BackToLogin>
           <BackLink to="/">
             ← Back to Sign In
           </BackLink>
+          <LegalFooter>
+            <LegalLinks>
+              <LegalLink to="/terms">Terms of Service</LegalLink>
+              <LegalLink to="/privacy">Privacy Policy</LegalLink>
+            </LegalLinks>
+          </LegalFooter>
         </BackToLogin>
       </RegisterContainer>
     </AuthContainer>

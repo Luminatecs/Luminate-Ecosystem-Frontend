@@ -108,8 +108,9 @@ export const Button = styled.button`
   gap: 0.5rem;
   
   &:hover:not(:disabled) {
-    background: #1557b0;
+    background: linear-gradient(135deg, #1a2332 0%, #2c5282 100%);
     box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+    transform: translateY(-1px);
   }
   
   &:active:not(:disabled) {

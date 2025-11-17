@@ -65,7 +65,7 @@ const FormSection = styled.div`
  */
 const WelcomeSection = styled.div`
   flex: 0.8;
-  background: linear-gradient(135deg, #1967d2 0%, #1557b0 100%);
+  background: linear-gradient(135deg, #1a2332 0%, #2c5282 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -75,6 +75,16 @@ const WelcomeSection = styled.div`
   text-align: center;
   position: relative;
   overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(26, 35, 50, 0.1);
+  }
 
   @media (max-width: 768px) {
     flex: none;
@@ -93,6 +103,14 @@ const Form = styled.form`
   width: 100%;
   flex: 1;
   overflow-y: auto;
+  
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const Select = styled.select`
@@ -345,12 +363,6 @@ const IndividualRegistrationPage: React.FC = () => {
           </div>
           
           <Form onSubmit={handleSubmit} noValidate>
-            {validationErrors.submit && (
-              <ErrorMessage role="alert">
-                {validationErrors.submit}
-              </ErrorMessage>
-            )}
-
             <FormGroup>
               <Label htmlFor="name">Full Name</Label>
               <Input
@@ -489,6 +501,12 @@ const IndividualRegistrationPage: React.FC = () => {
               <ErrorMessage role="alert">{validationErrors.termsAccepted}</ErrorMessage>
             )}
 
+            {validationErrors.submit && (
+              <ErrorMessage role="alert" style={{ marginBottom: '16px' }}>
+                {validationErrors.submit}
+              </ErrorMessage>
+            )}
+
             <Button
               type="submit"
               state={buttonState}
@@ -496,7 +514,7 @@ const IndividualRegistrationPage: React.FC = () => {
               fullWidth
               successText="Registration successful! Redirecting to login..."
               errorText="Registration failed. Please try again."
-              backgroundColor="#667eea"
+              backgroundColor="linear-gradient(135deg, #1a2332 0%, #2c5282 100%)"
             >
               Create Account
             </Button>

@@ -33,6 +33,10 @@ import ResourceDetail from './pages/modules/resources/resourcesDetails';
 // Documentation Pages
 import DocumentationPage from './pages/Documentation/DocumentationPage';
 
+// Legal Pages
+import TermsOfService from './pages/legal/TermsOfService';
+import PrivacyPolicy from './pages/legal/PrivacyPolicy';
+
 /**
  * Main Application Component
  * SECURITY: Comprehensive routing with JWT-based authentication
@@ -65,6 +69,10 @@ function App() {
             {/* Public Documentation Route */}
             <Route path="/docs" element={<DocumentationPage />} />
             <Route path="/documentation" element={<DocumentationPage />} />
+            
+            {/* Legal Pages - Public Routes */}
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
 
             {/* Protected Routes - Require JWT Authentication */}
             
