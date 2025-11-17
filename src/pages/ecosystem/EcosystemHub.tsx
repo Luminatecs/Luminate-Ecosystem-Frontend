@@ -461,17 +461,16 @@ const EcosystemHub: React.FC = () => {
   };
 
   const handleModuleClick = (module: Module) => {
-    // Choose URL based on environment
-    // const targetUrl = isDevelopment ? module.localUrl : module.productionUrl;
-    const targetUrl = module.productionUrl;
-    
-    // console.log(`Navigating to ${module.name}:`, {
-    //   environment: isDevelopment ? 'development' : 'production',
-    //   url: targetUrl
-    // });
-
-    // Open external application in new tab/window
-    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    // Navigate internally for library and resources, externally for kaeval
+    if (module.id === 'library') {
+      navigate('/library');
+    } else if (module.id === 'resources') {
+      navigate('/resources');
+    } else {
+      // For kaeval and other modules, use external URL
+      const targetUrl = module.productionUrl;
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const handleLogout = async () => {
