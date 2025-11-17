@@ -493,8 +493,8 @@ const IndividualRegistrationPage: React.FC = () => {
                 aria-invalid={!!validationErrors.termsAccepted}
               />
               <CheckboxLabel htmlFor="termsAccepted">
-                I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> and{' '}
-                <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                I agree to the <a href="/terms">Terms of Service</a> and{' '}
+                <a href="/privacy">Privacy Policy</a>
               </CheckboxLabel>
             </CheckboxGroup>
             {validationErrors.termsAccepted && (
