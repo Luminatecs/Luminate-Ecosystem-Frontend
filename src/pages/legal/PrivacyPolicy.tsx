@@ -142,14 +142,15 @@ const PrivacyPolicy: React.FC = () => {
         <Section>
           <SectionTitle>1. Introduction</SectionTitle>
           <Text>
-            Luminate Ecosystem ("<Strong>we</Strong>", "<Strong>our</Strong>", or "<Strong>us</Strong>") is committed to protecting 
-            your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, 
-            use, store, and share information when you use our career guidance platform and assessment services 
-            ("<Strong>Platform</Strong>" or "<Strong>Services</Strong>").
+            Luminate Ecosystem ("<Strong>we</Strong>", "<Strong>our</Strong>", or "<Strong>us</Strong>") is a Ghanaian-based 
+            organization committed to protecting your privacy and ensuring the security of your personal information. 
+            This Privacy Policy explains how we collect, use, store, and share information when you use our career 
+            guidance platform and assessment services ("<Strong>Platform</Strong>" or "<Strong>Services</Strong>").
           </Text>
           <Text>
             This policy applies to all users of our Platform, including students, educational institutions, 
-            parents/guardians, and organizational administrators.
+            parents/guardians, and organizational administrators, and is governed by the data protection laws of Ghana 
+            and applicable international privacy standards.
           </Text>
         </Section>
 
@@ -369,34 +370,54 @@ const PrivacyPolicy: React.FC = () => {
         <Section>
           <SectionTitle>9. Children's Privacy</SectionTitle>
           
-          <SubsectionTitle>9.1 COPPA Compliance</SubsectionTitle>
+          <SubsectionTitle>9.1 Ghana Children's Act Compliance</SubsectionTitle>
+          <Text>
+            In accordance with the Children's Act, 1998 (Act 560) of Ghana and our commitment to protecting minors, 
+            we implement enhanced privacy protections for users under 18 years of age. We recognize that children 
+            have fundamental rights to privacy and protection from harm, including digital harm.
+          </Text>
+          
+          <SubsectionTitle>9.2 COPPA Compliance</SubsectionTitle>
           <Text>
             For children under 13, we comply with the Children's Online Privacy Protection Act (COPPA). 
             We obtain parental consent before collecting personal information from children and allow 
             parents to review, delete, and control their child's information.
           </Text>
 
-          <SubsectionTitle>9.2 Educational Exception</SubsectionTitle>
+          <SubsectionTitle>9.3 Educational Exception</SubsectionTitle>
           <Text>
             When schools use our Platform for educational purposes, we may collect student information 
-            under COPPA's educational exception, with the school acting as the agent for parental consent.
+            under COPPA's educational exception, with the school acting as the agent for parental consent. 
+            This aligns with Ghana's educational privacy principles that prioritize the best interests of the child.
           </Text>
 
-          <SubsectionTitle>9.3 Parental Controls</SubsectionTitle>
+          <SubsectionTitle>9.4 Enhanced Protections for Minors</SubsectionTitle>
+          <Text>Under Ghanaian law and our privacy standards, we provide additional protections for users under 18:</Text>
+          <List>
+            <li>No targeted advertising based on personal profiles</li>
+            <li>Minimal data collection limited to educational purposes</li>
+            <li>Enhanced security measures for accounts</li>
+            <li>Regular deletion of unnecessary personal data</li>
+            <li>Parental access rights to review and manage data</li>
+          </List>
+
+          <SubsectionTitle>9.5 Parental and Guardian Controls</SubsectionTitle>
           <Text>Parents and guardians can:</Text>
           <List>
             <li>Review their child's personal information</li>
             <li>Request deletion of their child's account</li>
             <li>Refuse further collection or use of their child's information</li>
             <li>Access their child's assessment results and progress</li>
+            <li>Receive notifications about data practices affecting their child</li>
           </List>
         </Section>
 
         <Section>
           <SectionTitle>10. International Data Transfers</SectionTitle>
           <Text>
-            Our Platform may process information in countries other than where you reside. When we transfer 
-            personal information internationally, we implement appropriate safeguards, including:
+            Our Platform is operated from Ghana, and we may process information in countries other than where you reside. 
+            When we transfer personal information internationally from our primary operations in Ghana, we implement 
+            appropriate safeguards, including:
           </Text>
           <List>
             <li>Standard contractual clauses approved by regulatory authorities</li>
@@ -439,11 +460,42 @@ const PrivacyPolicy: React.FC = () => {
         </Section>
 
         <Section>
-          <SectionTitle>13. Data Breach Notification</SectionTitle>
+          <SectionTitle>13. Data Breach Notification and Liability Limitations</SectionTitle>
+          
+          <SubsectionTitle>13.1 Breach Notification</SubsectionTitle>
           <Text>
             In the unlikely event of a data breach that poses a risk to your personal information, 
             we will notify affected users and relevant authorities as required by applicable laws, 
             typically within 72 hours of discovering the breach.
+          </Text>
+          
+          <SubsectionTitle>13.2 Force Majeure and External Factors</SubsectionTitle>
+          <Text>
+            While we maintain robust security measures, we cannot be held liable for data breaches or 
+            security incidents that result from circumstances reasonably beyond our control, including but not limited to:
+          </Text>
+          <List>
+            <li>Natural disasters, floods, earthquakes, or other acts of nature</li>
+            <li>Cyberattacks by sophisticated threat actors using previously unknown vulnerabilities</li>
+            <li>Government seizures, sanctions, or regulatory actions</li>
+            <li>Infrastructure failures by third-party service providers despite due diligence</li>
+            <li>War, terrorism, civil unrest, or other extraordinary circumstances</li>
+            <li>Zero-day exploits or attacks that circumvent industry-standard security measures</li>
+          </List>
+          
+          <SubsectionTitle>13.3 Reasonable Security Standards</SubsectionTitle>
+          <Text>
+            Our liability for data protection is limited to maintaining security measures that meet or exceed 
+            industry standards reasonable for an organization of our size and the nature of data we process. 
+            We implement security controls proportionate to the risks involved and continuously monitor for 
+            emerging threats.
+          </Text>
+          
+          <SubsectionTitle>13.4 User Responsibilities</SubsectionTitle>
+          <Text>
+            Users also have responsibilities in protecting their data, including maintaining secure passwords, 
+            not sharing account credentials, and promptly reporting suspected unauthorized access. 
+            We are not liable for breaches resulting from user negligence or misuse of their accounts.
           </Text>
         </Section>
 
@@ -463,21 +515,28 @@ const PrivacyPolicy: React.FC = () => {
         <Section>
           <SectionTitle>15. Regional Privacy Rights</SectionTitle>
           
-          <SubsectionTitle>15.1 European Users (GDPR)</SubsectionTitle>
+          <SubsectionTitle>15.1 Ghanaian Users (Data Protection Act)</SubsectionTitle>
+          <Text>
+            As a Ghanaian-based organization, we comply with the Data Protection Act, 2012 (Act 843) and related 
+            regulations. Ghanaian users have rights including access to personal data, correction of inaccurate 
+            information, and the right to object to processing in certain circumstances.
+          </Text>
+
+          <SubsectionTitle>15.2 European Users (GDPR)</SubsectionTitle>
           <Text>
             If you are in the European Economic Area, you have additional rights under the General Data 
             Protection Regulation (GDPR), including enhanced data portability, the right to be forgotten, 
             and the right to lodge complaints with supervisory authorities.
           </Text>
 
-          <SubsectionTitle>15.2 California Users (CCPA)</SubsectionTitle>
+          <SubsectionTitle>15.3 California Users (CCPA)</SubsectionTitle>
           <Text>
             California residents have specific rights under the California Consumer Privacy Act (CCPA), 
             including the right to know what personal information is collected and the right to opt-out 
             of the sale of personal information (though we do not sell personal information).
           </Text>
 
-          <SubsectionTitle>15.3 Other Jurisdictions</SubsectionTitle>
+          <SubsectionTitle>15.4 Other Jurisdictions</SubsectionTitle>
           <Text>
             We comply with applicable privacy laws in all jurisdictions where we operate and provide 
             appropriate protections based on local requirements.
@@ -495,8 +554,7 @@ const PrivacyPolicy: React.FC = () => {
             <Strong>General Inquiries:</Strong> support@luminatecs.com<br />
             <Strong>Mailing Address:</Strong><br />
             Luminate Ecosystem Privacy Department<br />
-            [Address Line 1]<br />
-            [Address Line 2]<br />
+            Accra, Ghana<br />
             <Strong>Website:</Strong> https://hub.luminatecs.com
           </Text>
         </ContactInfo>
