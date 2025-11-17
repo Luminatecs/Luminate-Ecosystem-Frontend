@@ -523,6 +523,10 @@ const IndividualRegistrationPage: React.FC = () => {
           <BackLink>
             <Link to="/register">← Back to Registration Options</Link>
           </BackLink>
+          
+          <BackLink style={{ marginTop: '12px', paddingTop: '12px' }}>
+            Already have an account? <Link to="/" style={{ fontWeight: '600' }}>Sign In</Link>
+          </BackLink>
         </FormSection>
 
         <WelcomeSection>

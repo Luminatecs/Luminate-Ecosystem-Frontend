@@ -200,14 +200,10 @@ const ModuleItem = styled.div<{ angle: number; distance?: number }>`
   
   @media (max-width: 768px) {
     transform: translate(-50%, -50%) rotate(${props => props.angle}deg) translateX(180px) rotate(-${props => props.angle}deg);
-    pointer-events: none;
-    cursor: default;
   }
   
   @media (max-width: 480px) {
     transform: translate(-50%, -50%) rotate(${props => props.angle}deg) translateX(160px) rotate(-${props => props.angle}deg);
-    pointer-events: none;
-    cursor: default;
   }
   
   @media (min-width: 769px) {
