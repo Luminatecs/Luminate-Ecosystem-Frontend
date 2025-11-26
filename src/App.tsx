@@ -19,6 +19,7 @@ import { StudentEnrollmentPage, EnrollmentListPage } from './pages/enrollment';
 
 // Main Pages
 import EcosystemHub from './pages/ecosystem/EcosystemHub';
+import URLConversion from './pages/ecosystem/URLConversion';
 import OrganizationDashboard from './pages/Organization/OrganizationDashboard';
 import SuperAdminDashboard from './pages/admin/SuperAdminDashboard';
 import AdminSettings from './pages/admin/AdminSettings';
@@ -111,6 +112,14 @@ function App() {
                 <ProtectedRoute>
                   <EcosystemHub />
                 </ProtectedRoute>
+              } 
+            />
+
+            {/* URL Conversion Tool - Available to all authenticated users */}
+            <Route 
+              path="/urlconversion" 
+              element={
+                  <URLConversion />
               } 
             />
 
