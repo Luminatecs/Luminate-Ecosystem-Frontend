@@ -5,7 +5,22 @@ import apiClient from '../config/apiClient';
  */
 const getBackendBaseUrl = (): string => {
   const isDev = window.location.hostname === 'localhost';
-  return isDev ? 'http://localhost:3002' : 'https://hub.luminatecs.com';
+  if (isDev) {
+    return 'http://localhost:3002';
+  }
+  // On production, use /api prefix so it goes through the reverse proxy
+  return 'https://hub.luminatecs.com';
+};
+
+/**
+ * Helper to adjust path for production (add /api prefix)
+ */
+const getImageUrl = (relativePath: string): string => {
+  const isDev = window.location.hostname === 'localhost';
+  const baseUrl = getBackendBaseUrl();
+  // On production, ensure path uses /api/uploads instead of /uploads
+  const adjustedPath = isDev ? relativePath : relativePath.replace('/uploads/', '/api/uploads/');
+  return `${baseUrl}${adjustedPath}`;
 };
 
 /**
@@ -104,8 +119,7 @@ export const uploadImage = async (file: File): Promise<ImageUploadResponse> => {
 
     // Construct full URL using backend base URL
     const uploadPath = response.data.data.path;
-    const baseUrl = getBackendBaseUrl();
-    const fullUrl = `${baseUrl}${uploadPath}`;
+    const fullUrl = getImageUrl(uploadPath);
 
     // Return response with constructed URL
     return {
@@ -144,8 +158,7 @@ export const uploadLogo = async (file: File): Promise<ImageUploadResponse> => {
 
     // Construct full URL using backend base URL
     const uploadPath = response.data.data.path;
-    const baseUrl = getBackendBaseUrl();
-    const fullUrl = `${baseUrl}${uploadPath}`;
+    const fullUrl = getImageUrl(uploadPath);
 
     // Return response with constructed URL
     return {
@@ -184,8 +197,7 @@ export const uploadBanner = async (file: File): Promise<ImageUploadResponse> => 
 
     // Construct full URL using backend base URL
     const uploadPath = response.data.data.path;
-    const baseUrl = getBackendBaseUrl();
-    const fullUrl = `${baseUrl}${uploadPath}`;
+    const fullUrl = getImageUrl(uploadPath);
 
     // Return response with constructed URL
     return {
@@ -266,10 +278,9 @@ export const fetchAllResources = async (): Promise<any[]> => {
     const resources = response.data.data || [];
     
     // Use backend base URL to construct full URLs
-    const baseUrl = getBackendBaseUrl();
     return resources.map((resource: any) => ({
       ...resource,
-      url: `${baseUrl}${resource.path}`
+      url: getImageUrl(resource.path)
     }));
   } catch (error: any) {
     console.error('Error fetching resources:', error.message);
