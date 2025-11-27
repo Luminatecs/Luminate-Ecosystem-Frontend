@@ -383,13 +383,47 @@ const HistorySection = styled.div`
   width: 100%;
 `;
 
-const HistoryHeader = styled.h3`
+const HistoryHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin: 0 0 0.5rem 0;
+  padding: 0 0.75rem;
+`;
+
+const HistoryTitle = styled.h3`
+  margin: 0;
   color: white;
   font-size: 1rem;
   font-weight: 700;
-  text-align: left;
-  padding: 0 0.75rem;
+`;
+
+const HistoryRefreshButton = styled.button`
+  background: rgba(100, 200, 150, 0.15);
+  border: 1px solid rgba(100, 200, 150, 0.4);
+  color: rgba(150, 255, 200, 1);
+  padding: 0.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: rgba(100, 200, 150, 0.3);
+    border-color: rgba(100, 200, 150, 0.7);
+    transform: rotate(90deg);
+  }
+
+  &:active {
+    transform: rotate(90deg) scale(0.95);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 const HistoryContainer = styled.div`
@@ -672,13 +706,8 @@ const URLConversion: React.FC = () => {
   };
 
   useEffect(() => {
-    // Fetch on mount
+    // Fetch on mount only
     fetchLatestResources();
-
-    // Set up interval to fetch every 5 seconds for real-time updates
-    const interval = setInterval(fetchLatestResources, 5000);
-
-    return () => clearInterval(interval);
   }, []);
 
   // ============================================================================
@@ -1004,7 +1033,12 @@ const URLConversion: React.FC = () => {
         {/* RIGHT COLUMN - UPLOAD HISTORY */}
         <RightSection>
           <HistorySection>
-            <HistoryHeader>📋 Upload History</HistoryHeader>
+            <HistoryHeader>
+              <HistoryTitle>📋 Upload History</HistoryTitle>
+              <HistoryRefreshButton onClick={fetchLatestResources} title="Refresh history">
+                <RefreshCw />
+              </HistoryRefreshButton>
+            </HistoryHeader>
             <HistoryContainer>
               {uploadHistory.length > 0 ? (
                 uploadHistory.map((item, index) => (
