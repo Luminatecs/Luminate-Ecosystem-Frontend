@@ -1,5 +1,12 @@
 import apiClient from '../config/apiClient';
-import API_CONFIG from '../config/apiConfig';
+
+/**
+ * Helper function to get backend base URL for constructing image URLs
+ */
+const getBackendBaseUrl = (): string => {
+  const isDev = window.location.hostname === 'localhost';
+  return isDev ? 'http://localhost:3002' : 'https://hub.luminatecs.com';
+};
 
 /**
  * Fetch history of all uploaded images from the backend
@@ -11,12 +18,8 @@ export const fetchImageHistory = async (): Promise<any[]> => {
     if (!response.data.success) {
       throw new Error(response.data.message || 'Failed to fetch image history');
     }
-    const images = response.data.data || [];
-    const apiBaseUrl = API_CONFIG.API_BASE_URL.replace('/api', '');
-    return images.map((img: any) => ({
-      ...img,
-      url: `${apiBaseUrl}${img.url}`
-    }));
+    // Backend now returns full URLs, so just return the data as-is
+    return response.data.data || [];
   } catch (error: any) {
     console.error('Error fetching image history:', error.message);
     return [];
@@ -99,10 +102,10 @@ export const uploadImage = async (file: File): Promise<ImageUploadResponse> => {
       throw new Error(response.data.message || 'Failed to upload image');
     }
 
-    // Construct full URL using apiClient's base URL
+    // Construct full URL using backend base URL
     const uploadPath = response.data.data.path;
-    const apiBaseUrl = API_CONFIG.API_BASE_URL.replace('/api', ''); // Remove /api suffix to get domain base
-    const fullUrl = `${apiBaseUrl}${uploadPath}`;
+    const baseUrl = getBackendBaseUrl();
+    const fullUrl = `${baseUrl}${uploadPath}`;
 
     // Return response with constructed URL
     return {
@@ -139,10 +142,10 @@ export const uploadLogo = async (file: File): Promise<ImageUploadResponse> => {
       throw new Error(response.data.message || 'Failed to upload logo');
     }
 
-    // Construct full URL using apiClient's base URL
+    // Construct full URL using backend base URL
     const uploadPath = response.data.data.path;
-    const apiBaseUrl = API_CONFIG.API_BASE_URL.replace('/api', ''); // Remove /api suffix to get domain base
-    const fullUrl = `${apiBaseUrl}${uploadPath}`;
+    const baseUrl = getBackendBaseUrl();
+    const fullUrl = `${baseUrl}${uploadPath}`;
 
     // Return response with constructed URL
     return {
@@ -179,10 +182,10 @@ export const uploadBanner = async (file: File): Promise<ImageUploadResponse> => 
       throw new Error(response.data.message || 'Failed to upload banner');
     }
 
-    // Construct full URL using apiClient's base URL
+    // Construct full URL using backend base URL
     const uploadPath = response.data.data.path;
-    const apiBaseUrl = API_CONFIG.API_BASE_URL.replace('/api', ''); // Remove /api suffix to get domain base
-    const fullUrl = `${apiBaseUrl}${uploadPath}`;
+    const baseUrl = getBackendBaseUrl();
+    const fullUrl = `${baseUrl}${uploadPath}`;
 
     // Return response with constructed URL
     return {
@@ -262,11 +265,11 @@ export const fetchAllResources = async (): Promise<any[]> => {
 
     const resources = response.data.data || [];
     
-    // Construct full URLs for all resources
-    const apiBaseUrl = API_CONFIG.API_BASE_URL.replace('/api', '');
+    // Use backend base URL to construct full URLs
+    const baseUrl = getBackendBaseUrl();
     return resources.map((resource: any) => ({
       ...resource,
-      url: `${apiBaseUrl}${resource.path}`
+      url: `${baseUrl}${resource.path}`
     }));
   } catch (error: any) {
     console.error('Error fetching resources:', error.message);
