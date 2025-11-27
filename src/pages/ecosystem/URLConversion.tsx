@@ -1047,7 +1047,7 @@ const URLConversion: React.FC = () => {
                     <HistoryItemContent>
                       <HistoryItemType>{item.type === 'logo' ? '🎯 Logo' : '🎨 Banner'}</HistoryItemType>
                       <HistoryItemUrl title={item.data.data.url}>
-                        {item.data.data.url.split('/').pop() || item.data.data.url}
+                        {item.data.data.url}
                       </HistoryItemUrl>
                     </HistoryItemContent>
                   </HistoryItem>
