@@ -14,28 +14,38 @@ import { Upload, Trash2, Loader, RefreshCw } from 'lucide-react';
 // ============================================================================
 
 const PageContainer = styled.div`
-  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  /* padding: 1rem; */
-  overflow-y: hidden;
+  overflow: hidden;
+  padding: 0;
 `;
 
 const ContentWrapper = styled.div`
   width: 100%;
-  /* max-width: 1400px; */
   display: flex;
-  /* grid-template-columns: 1fr 1fr; */
   gap: 1.5rem;
   align-items: flex-start;
   height: 100vh;
 
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-    max-width: 600px;
+  @media (max-width: 1200px) {
     gap: 1rem;
+  }
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    height: 100vh;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 640px) {
+    padding: 0 0.5rem;
+    gap: 0.75rem;
   }
 `;
 
@@ -44,18 +54,13 @@ const LeftSection = styled.div`
   flex-direction: column;
   gap: 1.5rem;
   align-items: center;
-  /* justify-content: space-around; */
   overflow-y: auto;
   height: 100vh;
-  /* padding-right: 0.5rem;
-  padding-top: 5rem; */
-  padding: 5rem;
+  padding: 5rem 3rem;
   background: rgba(0, 0, 0, 0.25);
   border-radius: 8px;
   flex: 1.4;
   position: relative;
-  /* padding: 1rem 0.5rem 0 0.5rem; */
-  
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -66,6 +71,26 @@ const LeftSection = styled.div`
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 4rem 2rem;
+  }
+
+  @media (max-width: 1024px) {
+    height: auto;
+    min-height: 60vh;
+    max-height: none;
+    padding: 3rem 2rem 2rem;
+    flex: none;
+    width: 100%;
+    overflow-y: visible;
+  }
+
+  @media (max-width: 640px) {
+    padding: 3rem 1rem 1.5rem;
+    gap: 1rem;
+    min-height: 50vh;
   }
 `;
 
@@ -78,6 +103,19 @@ const LuminateLogo = styled.img`
   object-fit: contain;
   opacity: 0.95;
   z-index: 10;
+
+  @media (max-width: 1024px) {
+    top: -1rem;
+    left: 0.5rem;
+    width: 90px;
+    height: 90px;
+  }
+
+  @media (max-width: 640px) {
+    width: 70px;
+    height: 70px;
+    top: -0.75rem;
+  }
 `;
 
 const RightSection = styled.div`
@@ -100,6 +138,19 @@ const RightSection = styled.div`
     background: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
   }
+
+  @media (max-width: 1024px) {
+    max-height: 35vh;
+    padding-top: 0;
+    padding-right: 0.5rem;
+    flex: none;
+    width: 100%;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 640px) {
+    max-height: 40vh;
+  }
 `;
 
 // ============================================================================
@@ -114,6 +165,27 @@ const UploadContainer = styled.div`
   justify-content: center;
   flex-wrap: nowrap;
   margin-top: 5rem;
+
+  @media (max-width: 1400px) {
+    gap: 8rem;
+  }
+
+  @media (max-width: 1200px) {
+    gap: 5rem;
+    margin-top: 3rem;
+  }
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    gap: 3rem;
+    align-items: center;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 640px) {
+    gap: 2rem;
+    margin-top: 1rem;
+  }
 `;
 
 const LogoSection = styled.div`
@@ -124,6 +196,11 @@ const LogoSection = styled.div`
   width: auto;
   max-width: 200px;
   flex-shrink: 0;
+
+  @media (max-width: 1024px) {
+    max-width: 100%;
+    width: 100%;
+  }
 `;
 
 const BannerSection = styled.div`
@@ -134,6 +211,11 @@ const BannerSection = styled.div`
   width: auto;
   max-width: 320px;
   flex-shrink: 0;
+
+  @media (max-width: 1024px) {
+    max-width: 100%;
+    width: 100%;
+  }
 `;
 
 const RefreshButtonContainer = styled.div`
@@ -142,6 +224,15 @@ const RefreshButtonContainer = styled.div`
   width: 100%;
   margin-top: 2.5rem;
   margin-bottom: 1rem;
+
+  @media (max-width: 1024px) {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    margin-top: 1rem;
+  }
 `;
 
 const RefreshButton = styled.button`
@@ -192,6 +283,10 @@ const LogoHeader = styled.div`
     font-size: 1.1rem;
     font-weight: 700;
     color: #ffffff;
+
+    @media (max-width: 640px) {
+      font-size: 1rem;
+    }
   }
 
   p {
@@ -199,6 +294,10 @@ const LogoHeader = styled.div`
     font-size: 0.75rem;
     opacity: 1;
     color: rgba(255, 255, 255, 0.95);
+
+    @media (max-width: 640px) {
+      font-size: 0.7rem;
+    }
   }
 `;
 
@@ -225,6 +324,16 @@ const CircularDropZone = styled.div<{ isDragOver: boolean; hasImage: boolean }>`
     width: 36px;
     height: 36px;
     color: rgba(255, 255, 255, 0.8);
+  }
+
+  @media (max-width: 640px) {
+    width: 120px;
+    height: 120px;
+
+    svg {
+      width: 32px;
+      height: 32px;
+    }
   }
 `;
 
@@ -305,6 +414,10 @@ const BannerHeader = styled.div`
     font-size: 1.1rem;
     font-weight: 700;
     color: #ffffff;
+
+    @media (max-width: 640px) {
+      font-size: 1rem;
+    }
   }
 
   p {
@@ -312,6 +425,10 @@ const BannerHeader = styled.div`
     font-size: 0.75rem;
     opacity: 1;
     color: rgba(255, 255, 255, 0.95);
+
+    @media (max-width: 640px) {
+      font-size: 0.7rem;
+    }
   }
 `;
 
@@ -334,6 +451,17 @@ const BannerDropZone = styled.div<{ isDragOver: boolean; hasImage: boolean }>`
   &:hover {
     border-color: rgba(255, 255, 255, 0.8);
     background: rgba(255, 255, 255, 0.1);
+  }
+
+  @media (max-width: 640px) {
+    height: 120px;
+    width: 240px;
+    padding: ${props => props.hasImage ? '0' : '0.75rem'};
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    min-width: 200px;
   }
 `;
 
@@ -363,12 +491,20 @@ const BannerUploadContent = styled.div`
     margin: 0;
     font-size: 0.85rem;
     font-weight: 600;
+
+    @media (max-width: 640px) {
+      font-size: 0.8rem;
+    }
   }
 
   p {
     margin: 0;
     font-size: 0.7rem;
     opacity: 0.9;
+
+    @media (max-width: 640px) {
+      font-size: 0.65rem;
+    }
   }
 `;
 
@@ -452,6 +588,10 @@ const HistoryContainer = styled.div`
       background: rgba(255, 255, 255, 0.3);
     }
   }
+
+  @media (max-width: 1024px) {
+    max-height: none;
+  }
 `;
 
 const HistoryItem = styled.div`
@@ -498,14 +638,19 @@ const HistoryItem = styled.div`
       transform: translateY(0);
     }
   }
-`;
 
-const HistoryItemThumb = styled.img`
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
-  border-radius: 4px;
-  flex-shrink: 0;
+  @media (max-width: 640px) {
+    padding: 0.6rem;
+    gap: 0.5rem;
+
+    &::before {
+      width: 18px;
+      height: 18px;
+      font-size: 0.65rem;
+      top: -7px;
+      left: 8px;
+    }
+  }
 `;
 
 const HistoryItemContent = styled.div`
@@ -533,37 +678,10 @@ const HistoryItemUrl = styled.div`
   background: rgba(0, 0, 0, 0.3);
   padding: 0.4rem;
   border-radius: 2px;
-`;
 
-const HistoryItemActions = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  flex-shrink: 0;
-`;
-
-const HistoryActionButton = styled.button`
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  width: 28px;
-  height: 28px;
-  border-radius: 2px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  font-size: 0.75rem;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.6);
-  }
-
-  svg {
-    width: 12px;
-    height: 12px;
+  @media (max-width: 640px) {
+    font-size: 0.6rem;
+    padding: 0.35rem;
   }
 `;
 
@@ -584,6 +702,14 @@ const URLItem = styled.div`
   gap: 0.3rem;
   width: 100%;
   max-width: 180px;
+
+  @media (max-width: 1024px) {
+    max-width: 320px;
+  }
+
+  @media (max-width: 640px) {
+    max-width: 100%;
+  }
 `;
 
 const URLLabel = styled.div`

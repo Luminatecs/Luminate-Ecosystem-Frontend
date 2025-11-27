@@ -18,8 +18,11 @@ const getBackendBaseUrl = (): string => {
 const getImageUrl = (relativePath: string): string => {
   const isDev = window.location.hostname === 'localhost';
   const baseUrl = getBackendBaseUrl();
-  // On production, ensure path uses /api/uploads instead of /uploads
-  const adjustedPath = isDev ? relativePath : relativePath.replace('/uploads/', '/api/uploads/');
+  // On production, check if path already has /api, if not add it
+  let adjustedPath = relativePath;
+  if (!isDev && !relativePath.startsWith('/api/')) {
+    adjustedPath = relativePath.replace('/uploads/', '/api/uploads/');
+  }
   return `${baseUrl}${adjustedPath}`;
 };
 
