@@ -18,6 +18,7 @@ import {
 } from '../../components/auth/AuthStyles';
 import ecosystemBackground from '../../assets/images/ecosystembackgroundpng.png';
 import { LoginDto } from '../../models';
+import Season from '../../components/ui/Season';
 
 const LoginContainer = styled.div`
   display: flex;
@@ -400,6 +401,7 @@ const LoginPage: React.FC = () => {
     <AuthContainer>
       <LoginContainer>
         <WelcomeSection>
+                <Season />
           <WelcomeTitle>Luminate Ecosystem</WelcomeTitle>
           <WelcomeText>
             Empowering education through innovative technology solutions.
